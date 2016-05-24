@@ -17,7 +17,7 @@ assert os.path.isfile(os.getenv("FOAM_APPBIN")+"/icoFoam"), "Cannot find OpenFOA
 
 ext = [
     Extension("_pyDemIcoFoam",
-              sources=["pyDemIcoFoam.pyx",
+              sources=["_pyDemIcoFoam.pyx",
                        "demIcoFoam.C"],
               include_dirs = [
                   os.getenv("FOAM_SRC")+"/finiteVolume/lnInclude",
