@@ -4,7 +4,7 @@ from itasca.util import p2pLinkServer
 
 import numpy as np
 
-with p2pLinkServer as cfd_link:
+with p2pLinkServer() as cfd_link:
     cfd_link.start()
 
     nodes = cfd_link.read_data()
