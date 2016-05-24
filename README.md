@@ -20,7 +20,7 @@ to link `demIcoFoam` to *PFC3D*.
 
 The following diagram gives an overview of the system.
 
-![alt text](diagram.png"system schematic")
+![alt text](diagram.png "system schematic")
 
 
 # Installation
