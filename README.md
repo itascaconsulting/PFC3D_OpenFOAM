@@ -20,6 +20,9 @@ to link `demIcoFoam` to *PFC3D*.
 
 The following diagram gives an overview of the system.
 
+![alt text](diagram.png"system schematic")
+
+
 # Installation
 
 ## Setting up *VirtualBox*
@@ -141,4 +144,20 @@ This should launch the coupled calculation.
 
 ![alt text](dropTest1/dropTest1.png "Model Results")
 
+# Limitations
+
+This work is intended as a demonstration of how to connect *PFC3D* to
+a CFD solver. The implementation given here is limited in the
+following ways:
+
+- No linear relaxation is used to stabilize the equations. Numerical
+  instabilities are likely to occur.
+
+- No turbulence model is included in the analysis.
+
+- Further verification of the coupled system is underway.
+
 # More Information
+
+Documentation for OpenFOAM can be found here:
+http://cfd.direct/openfoam/documentation/
