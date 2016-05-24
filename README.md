@@ -106,7 +106,7 @@ the particles. `pyDemIcoFoam` is a Python wrapper for `demIcoFoam`
 cd
 mkdir src
 cd src
-git clone
+git clone https://github.com/jkfurtney/PFC3D_OpenFOAM.git
 
 cd PFC3D_OpenFOAM/pyDemIcoFoam/
 python setup.py install --user
@@ -139,6 +139,6 @@ python cfd_dropTest1.py
 ```
 This should launch the coupled calculation.
 
-![alt text](dropTest1.png "Logo Title Text 1")
+![alt text](dropTest1/dropTest1.png "Model Results")
 
 # More Information
