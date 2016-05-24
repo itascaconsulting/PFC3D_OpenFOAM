@@ -132,14 +132,20 @@ Under Windows make a clone of this repository.
 A demonstration and verification problem is included in the
 `dropTest1/` folder.
 
-Open *PFC3D* and open dropTest1/dropTest1.p3prj
-In `PFC3D` run the file pfc_dropTest1.py
-In Ubuntu:
+#### In `PFC3D`
+
+- Open *PFC3D* and open dropTest1/dropTest1.p3prj
+
+- Run the file `pfc_dropTest1.py`
+
+#### In Ubuntu:
+
 ```bash
 cd ~/src/PFC3D_OpenFOAM/dropTest1/
 blockMesh
 python cfd_dropTest1.py
 ```
+
 This should launch the coupled calculation.
 
 ![alt text](dropTest1/dropTest1.png "Model Results")
