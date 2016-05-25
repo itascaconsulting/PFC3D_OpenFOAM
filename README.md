@@ -10,7 +10,7 @@ Consulting Group.
 The two-way coarse-grid coupling between *PFC3D* and *OpenFOAM* follows
 the approach of Tsuji. Porosity and body force fields are included in
 the Navier-Stokes equation to account for the presence of particles in
-the flow and these terms are linked to the *PFC3D* particles.
+the flow and these terms are linked to drag forces on the *PFC3D* particles.
 
 A modified version of the *OpenFOAM* `icoFoam` solver (`demIcoFoam`) is
 supplied. Currently, `demIcoFoam` only runs on Linux systems and *PFC3D*
@@ -25,16 +25,16 @@ The following diagram gives an overview of the system.
 
 # Installation
 
+Update to the latest *PFC3D* version: http://www.itascacg.com
+
 ## Setting up *VirtualBox*
 
-Update to the latest PFC3D version: itascacg.com
-
-Install Virtual Box 5.0.20 or newer http://download.virtualbox.org/virtualbox/5.0.20/VirtualBox-5.0.20-106931-Win.exe
+Install VirtualBox 5.0.20 or newer http://download.virtualbox.org/virtualbox/5.0.20/VirtualBox-5.0.20-106931-Win.exe
 
 Install Ubuntu 16.04 into VirtualBox http://www.ubuntu.com/download/desktop
 
 Install the VirtualBox Linux Guest Additions: In the Virtual Box
-window select Devices > Insert the Guest Additions Cd Image. Follow
+window select Devices > Insert the Guest Additions CD Image. Follow
 the on screen instructions.
 
 Make sure you Ubuntu environment is current with:
@@ -118,7 +118,7 @@ python setup.py install --user
 Test that this worked:
 
 ```bash
-cd
+cd ~
 python -c "import pyDemIcoFoam; print pyDemIcoFoam.__version__"
 ```
 
@@ -132,9 +132,9 @@ Under Windows make a clone of this repository.
 A demonstration and verification problem is included in the
 `dropTest1/` folder.
 
-#### In `PFC3D`
+#### In *PFC3D*
 
-- Open *PFC3D* and open dropTest1/dropTest1.p3prj
+- Start *PFC3D* and open `dropTest1/dropTest1.p3prj`
 
 - Run the file `pfc_dropTest1.py`
 
@@ -161,9 +161,11 @@ following ways:
 
 - No turbulence model is included in the analysis.
 
+- Time derivatives of porosity are not included in the momentum or continuity equations.
+
 - Further verification of the coupled system is underway.
 
 # More Information
 
-Documentation for OpenFOAM can be found here:
+Documentation for *OpenFOAM* can be found here:
 http://cfd.direct/openfoam/documentation/
