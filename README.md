@@ -169,3 +169,19 @@ following ways:
 
 Documentation for *OpenFOAM* can be found here:
 http://cfd.direct/openfoam/documentation/
+
+## Building a local copy of the *OpenFOAM* documentation
+
+If you are exploring the *OpenFOAM* C++ code it is helpful to have a
+local copy of the OpenFOAM C++ API documentation. GNU Global can help
+navigating large source codes.
+
+```bash
+sudo apt-get install doxygen graphviz global
+cd $WM_PROJECT_DIR/doc
+./Allwmake
+```
+
+The Doxygen reference should be in `$WM_PROJECT_DIR/doc/Doxygen/html/index.html`
+
+python setup.py install --user > log.txt 2>&1 && tail log.txt

@@ -1,2 +1,7 @@
 *.pyc
 polyMesh/
+/pyDemIcoFoam/log.txt
+/porous1/gradp.dat
+/porous1/p.dat
+/porous1/u.dat
+/porous1/vvec.pvsm

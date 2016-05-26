@@ -79,6 +79,23 @@ demIcoFoam::demIcoFoam() {
   cumulativeContErr_ = 0.0;
 }
 
+demIcoFoam::~demIcoFoam() {
+  Info << "cleaning up demIcoFoam" << nl << endl;
+  if (gradp_) delete gradp_;
+  if (phi_) delete phi_;
+  if (n_) delete n_;
+  if (f_) delete f_;
+  if (U_) delete U_;
+  if (p_) delete p_;
+  if (rho_) delete rho_;
+  if (nu_) delete nu_;
+  if (piso_) delete piso_;
+  if (mesh_) delete mesh_;
+  if (runTime_) delete runTime_;
+  if (args_) delete args_;
+
+}
+
 void demIcoFoam::run(double time_increment) {
   runTime_->setEndTime(runTime_->value() + time_increment);
   while (runTime_->loop())

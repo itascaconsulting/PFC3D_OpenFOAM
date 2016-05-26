@@ -15,11 +15,15 @@
 class demIcoFoam {
 public:
   demIcoFoam();
-  virtual ~demIcoFoam() { Info << "cleaning up" << nl << endl;}
+  virtual ~demIcoFoam();
   int nCells() { return mesh_->nCells(); }
   double rho() { return rho_->value(); }
   double nu() { return nu_->value(); }
   int nNodes() { return mesh_->nPoints(); }
+  int nFaces() { return mesh_->nFaces(); }
+  int face_node(int face, int node) { return mesh_->faces()[face][node]; }
+  int cell_face(int cell, int face) { return mesh_->cells()[cell][face]; }
+  double face_center(int face, int j) { return mesh_->faceCentres()[face][j]; }
   double node_pos(int i, int j) { return mesh_->points()[i][j]; }
   int element(int i, int j) { return mesh_->cellShapes()[i][j]; }
   void set_dt(double t) { runTime_->setDeltaT(t); }
@@ -30,6 +34,8 @@ public:
   VEC_SETGET(U)
   SETGET(p)
   VEC_GET(gradp)
+  GET(phi)
+
 
   Foam::argList *args_;
   Foam::Time  *runTime_;
