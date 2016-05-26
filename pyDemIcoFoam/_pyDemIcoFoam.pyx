@@ -12,6 +12,7 @@ cdef extern from "demIcoFoam.H":
        int face_node(int face, int node)
        int cell_face(int cell, int face)
        double face_center(int face, int j)
+       double cell_flux(int cell, int face)
        double node_pos(int i, int j)
        int element(int i, int j)
        double f(int i, int j)
@@ -21,9 +22,13 @@ cdef extern from "demIcoFoam.H":
        double p(int i)
        double U(int i, int j)
        double gradp(int i, int j)
-       double phi(int face)
+       double phi(int face) except +
        void set_dt(double v)
+       double dt()
        void run(double t) except +
+       int cell_near(double x, double y, double z)
+       double cell_center(int cell, int j)
+       double cell_volume(int cell)
 
 cdef class pyDemIcoFoam:
     cdef demIcoFoam *thisptr
@@ -36,6 +41,8 @@ cdef class pyDemIcoFoam:
     def nNodes(self): return self.thisptr.nNodes()
     def nFaces(self): return self.thisptr.nFaces()
     def set_dt(self, v): self.thisptr.set_dt(v)
+    def dt(self): return self.thisptr.dt()
+    def cell_near(self, x,y,z): return self.thisptr.cell_near(x,y,z)
 
     def faces(self):
         return np.array([[self.thisptr.face_node(i,j) for j in range(4)]
@@ -49,6 +56,17 @@ cdef class pyDemIcoFoam:
         return np.array([[self.thisptr.face_center(i,j) for j in range(3)]
                          for i in range(self.nFaces())])
 
+    def cell_centers(self):
+        return np.array([[self.thisptr.cell_center(i,j) for j in range(3)]
+                         for i in range(self.nCells())])
+
+    def cell_volumes(self):
+        return np.array([self.thisptr.cell_volume(i)
+                         for i in range(self.nCells())])
+
+    def cell_fluxes(self):
+        return np.array([[self.thisptr.cell_flux(i,j) for j in range(6)]
+                         for i in range(self.nCells())])
 
     def nodes(self):
         return np.array([[self.thisptr.node_pos(i,0),

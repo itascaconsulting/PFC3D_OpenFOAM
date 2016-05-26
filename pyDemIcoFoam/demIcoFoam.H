@@ -2,6 +2,7 @@
 #include "pisoControl.H"
 #include <iostream>
 #include <fstream>
+#include "meshSearch.H"
 
 #define VEC_GET(T) double T(int i, int j) { return (*T##_)[i][j]; }
 #define VEC_SET(T) void set_##T(int i, int j, double v) { (*T##_)[i][j]=v; }
@@ -23,10 +24,22 @@ public:
   int nFaces() { return mesh_->nFaces(); }
   int face_node(int face, int node) { return mesh_->faces()[face][node]; }
   int cell_face(int cell, int face) { return mesh_->cells()[cell][face]; }
+  double cell_flux(int cell, int face) {
+    label gface = mesh_->cells()[cell][face];
+    if (mesh_->faceOwner()[gface]==cell) return (*phi_)[gface];
+    else return -(*phi_)[gface];}
+
+  int cell_near(double x, double y, double z) {
+    meshSearch search(*mesh_);
+    return search.findNearestCell(point(x,y,z));}
+
+  double cell_center(int cell, int j) { return mesh_->cellCentres()[cell][j]; }
+  double cell_volume(int cell) { return mesh_->cellVolumes()[cell]; }
   double face_center(int face, int j) { return mesh_->faceCentres()[face][j]; }
   double node_pos(int i, int j) { return mesh_->points()[i][j]; }
   int element(int i, int j) { return mesh_->cellShapes()[i][j]; }
   void set_dt(double t) { runTime_->setDeltaT(t); }
+  double dt() { return runTime_->deltaT().value(); }
   void set_endtime(double t) { runTime_->setEndTime(t); }
   void run(double v);
   VEC_SETGET(f)

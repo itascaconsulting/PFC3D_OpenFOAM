@@ -22,19 +22,19 @@ boundaryField
 {
   inletWalls
   {
-    type            pressureInletVelocity;
-    value           uniform (0 0 0);
+    type       directionMixed;
+    refValue   uniform (0 0 0);
+    refGradient   uniform (0 0 0);
+    valueFraction  uniform (1 0 0 0 0 1);
+    value     uniform (0 0 0);
   }
   outletWalls
   {
-    type            fixedValue;
-    value           uniform (0 0 0);
-    //type            zeroGradient;
+    type            zeroGradient;
   }
   fixedWalls
   {
-    type            fixedValue;
-    value           uniform (0 0 0);
+    type            slip;
   }
 }
 
