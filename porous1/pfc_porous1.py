@@ -29,6 +29,7 @@ with p2pLinkServer() as cfd_link:
     element cfd ini visc {}
     cfd porosity poly
     cfd buoy on
+    cfd relax 1
     cfd update
     call particles.p3dat
     """.format(fluid_density, fluid_viscosity))
@@ -36,17 +37,21 @@ with p2pLinkServer() as cfd_link:
 
     element_volume = ca.volume()
     dt = 0.005
-
+    oldu = ca.velocity()
+    r_factor = 1.0
     for i in range(100):
         it.command("solve age {}".format(it.mech_age()+dt))
         print "sending solve time"
         cfd_link.send_data(dt) # solve interval
         cfd_link.send_data(ca.porosity())
-        cfd_link.send_data((ca.drag().T/element_volume).T/fluid_density)
+        new_force = (ca.drag().T/element_volume).T/fluid_density
+        cfd_link.send_data(np.zeros_like(new_force))
         print " cfd solve started"
         ca.set_pressure(cfd_link.read_data())
         ca.set_pressure_gradient(cfd_link.read_data())
-        ca.set_velocity(cfd_link.read_data())
+        newu = cfd_link.read_data()
+        ca.set_velocity(oldu*(1-r_factor)+newu*r_factor)
+        oldu = newu
         print " cfd solve ended"
 
     cfd_link.send_data(0.0)
