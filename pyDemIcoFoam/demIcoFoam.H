@@ -33,6 +33,8 @@ public:
     meshSearch search(*mesh_);
     return search.findNearestCell(point(x,y,z));}
 
+  double flux_on_patch(char *patch_name);
+
   double cell_center(int cell, int j) { return mesh_->cellCentres()[cell][j]; }
   double cell_volume(int cell) { return mesh_->cellVolumes()[cell]; }
   double face_center(int face, int j) { return mesh_->faceCentres()[face][j]; }

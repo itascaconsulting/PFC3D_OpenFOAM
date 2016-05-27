@@ -29,6 +29,7 @@ cdef extern from "demIcoFoam.H":
        int cell_near(double x, double y, double z)
        double cell_center(int cell, int j)
        double cell_volume(int cell)
+       double flux_on_patch(char *patch_name) except +
 
 cdef class pyDemIcoFoam:
     cdef demIcoFoam *thisptr
@@ -43,6 +44,7 @@ cdef class pyDemIcoFoam:
     def set_dt(self, v): self.thisptr.set_dt(v)
     def dt(self): return self.thisptr.dt()
     def cell_near(self, x,y,z): return self.thisptr.cell_near(x,y,z)
+    def flux_on_patch(self, name): return self.thisptr.flux_on_patch(name)
 
     def faces(self):
         return np.array([[self.thisptr.face_node(i,j) for j in range(4)]

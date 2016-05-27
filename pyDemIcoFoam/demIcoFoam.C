@@ -172,6 +172,16 @@ void demIcoFoam::run(double time_increment) {
 }
 
 
+double demIcoFoam::flux_on_patch(char *patch_name)
+{
+  label inletPatchi = (*mesh_).boundaryMesh().findPatchID(patch_name);
+  if (inletPatchi == -1)
+    throw std::runtime_error("Cannot find boundary patch");
+  scalar massFlux = sum((*phi_).boundaryField()[inletPatchi]);
+
+  return massFlux;
+
+}
 
 
 
