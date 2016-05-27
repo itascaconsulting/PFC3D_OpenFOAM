@@ -1,9 +1,7 @@
-from itasca import p2pLinkClient
-import subprocess
 import numpy as np
-from pyDemIcoFoam import pyDemIcoFoam
+from pyDemSimpleFoam import pyDemSimpleFoam
 
-solver = pyDemIcoFoam()
+solver = pyDemSimpleFoam()
 
 # print solver.nFaces()
 # print solver.nNodes()
@@ -24,7 +22,7 @@ n[abs(y-0.005)<1e-9]=0.5
 print (abs(y-0.005)<1e-9).sum()
 solver.n(n)
 
-solver.solve(0.5)
+solver.solve()
 
 cc = solver.cell_centers()
 flux = solver.cell_fluxes()
@@ -38,7 +36,7 @@ for i in range(120,130):
     #print cc[i]
     print i
     print flux[i]
-    print flux[i].sum()*solver.dt()/cv[i]
+    print flux[i].sum()/cv[i]
 
 print solver.flux_on_patch("inletWalls")
 print solver.flux_on_patch("outletWalls")
