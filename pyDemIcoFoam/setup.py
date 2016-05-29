@@ -9,11 +9,23 @@ from distutils.core import setup
 from distutils.extension import Extension
 from Cython.Build import cythonize
 import os
+import string
+
 
 assert not os.getenv("FOAM_SRC") is None, "Cannot find OpenFOAM install. Did you source ~/OpenFOAM/OpenFOAM-v3.0+/etc/bashrc ?"
 
 assert os.path.isfile(os.getenv("FOAM_APPBIN")+"/icoFoam"), "Cannot find OpenFOAM binaries. Did you build OpenFOAM in the default location? "
 
+
+def get_version_number(module):
+    f = open(os.path.join(module, "__init__.py"))
+    return string.strip(f.readline().split("=")[1])[1:-1]
+
+try:
+    print "building version", get_version_number("pyDemIcoFoam")
+except:
+    print "could not find version number in __init__.py"
+    raise
 
 ext = [
     Extension("_pyDemIcoFoam",
@@ -41,7 +53,7 @@ ext = [
 setup(
     name = 'pyDemIcoFoam',
     packages = ["pyDemIcoFoam"], # this must be the same as the name above
-    version = __import__('itasca').__version__,
+    version = get_version_number("pyDemIcoFoam"),
     description = "Python wrapper for demIcoFoam.",
     long_description = long_description,
     author = 'Jason Furtney',
