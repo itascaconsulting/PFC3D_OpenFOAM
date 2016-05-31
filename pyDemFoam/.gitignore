@@ -1,0 +1,5 @@
+build/
+*.so
+_pyDemIcoFoam.cpp
+_pyDemSimpleFoam.cpp
+log.txt
