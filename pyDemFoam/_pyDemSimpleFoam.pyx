@@ -15,8 +15,10 @@ cdef extern from "demSimpleFoam.H":
        double cell_flux(int cell, int face)
        double node_pos(int i, int j)
        int element(int i, int j)
-       double f(int i, int j)
-       void set_f(int i, int j, double v)
+       double ubar(int i, int j)
+       void set_ubar(int i, int j, double v)
+       double beta(int i)
+       void set_beta(int i, double v)
        double n(int i)
        void set_n(int i, double v)
        double p(int i)
@@ -28,6 +30,7 @@ cdef extern from "demSimpleFoam.H":
        double cell_center(int cell, int j)
        double cell_volume(int cell)
        double flux_on_patch(char *patch_name) except +
+
 
 cdef class pyDemSimpleFoam:
     cdef demSimpleFoam *thisptr
@@ -75,18 +78,18 @@ cdef class pyDemSimpleFoam:
         return np.array([[self.thisptr.element(i,j) for j in range(8)]
                          for i in range(self.nCells())])
 
-    def f(self, value=None):
+    def ubar(self, value=None):
         if value is None:
-            return np.array([[self.thisptr.f(i,0),
-                              self.thisptr.f(i,1),
-                              self.thisptr.f(i,2)]
+            return np.array([[self.thisptr.ubar(i,0),
+                              self.thisptr.ubar(i,1),
+                              self.thisptr.ubar(i,2)]
                              for i in range(self.nCells())])
         else:
             value = np.asarray(value, dtype=np.double)
             assert value.shape == (self.nCells(), 3)
             for i in range(self.nCells()):
                 for j in range(3):
-                    self.thisptr.set_f(i,j,value[i][j])
+                    self.thisptr.set_ubar(i,j,value[i][j])
 
     def n(self, value=None):
         if value is None:
@@ -97,6 +100,17 @@ cdef class pyDemSimpleFoam:
             assert value.shape == (self.nCells(),)
             for i in range(self.nCells()):
                 self.thisptr.set_n(i,value[i])
+
+    def beta(self, value=None):
+        if value is None:
+            return np.array([self.thisptr.beta(i)
+                             for i in range(self.nCells())])
+        else:
+            value = np.asarray(value, dtype=np.double)
+            assert value.shape == (self.nCells(),)
+            for i in range(self.nCells()):
+                self.thisptr.set_beta(i,value[i])
+
 
     def p(self):
         return np.array([self.thisptr.p(i)

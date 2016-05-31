@@ -60,7 +60,7 @@ demSimpleFoam::demSimpleFoam() {
   U_ = new volVectorField (IOobject ("U", runTime_->timeName(), *mesh_,
                                      IOobject::MUST_READ,
                                      IOobject::AUTO_WRITE), *mesh_);
-  f_ = new volVectorField(IOobject ("f", runTime_->timeName(), *mesh_,
+  ubar_ = new volVectorField(IOobject ("ubar", runTime_->timeName(), *mesh_,
                                     IOobject::MUST_READ,
                                     IOobject::AUTO_WRITE), *mesh_);
   n_ = new volScalarField(IOobject ("n", runTime_->timeName(), *mesh_,
@@ -70,6 +70,9 @@ demSimpleFoam::demSimpleFoam() {
                                            IOobject::READ_IF_PRESENT,
                                            IOobject::AUTO_WRITE),
                                  linearInterpolate(*U_) & mesh_->Sf());
+  beta_ = new volScalarField (IOobject ("beta", runTime_->timeName(), *mesh_,
+                                     IOobject::MUST_READ,
+                                     IOobject::AUTO_WRITE), *mesh_);
 
   pRefCell_ = 0;
   pRefValue_ = 0.0;
@@ -84,7 +87,8 @@ demSimpleFoam::~demSimpleFoam() {
   if (gradp_) delete gradp_;
   if (phi_) delete phi_;
   if (n_) delete n_;
-  if (f_) delete f_;
+  if (ubar_) delete ubar_;
+  if (beta_) delete beta_;
   if (U_) delete U_;
   if (p_) delete p_;
   if (rho_) delete rho_;
@@ -97,6 +101,11 @@ demSimpleFoam::~demSimpleFoam() {
 }
 
 void demSimpleFoam::run() {
+  volScalarField &beta = *beta_;
+  volVectorField &ubar = *ubar_;
+  volVectorField &U = *U_;
+  volScalarField &n = *n_;
+
   while (simple_->loop())
   {
     Info<< "Time = " << runTime_->timeName() << nl << endl;
@@ -104,9 +113,10 @@ void demSimpleFoam::run() {
     // --- Pressure-velocity SIMPLE corrector
     {
       // Momentum predictor
-      tmp<fvVectorMatrix> UEqn (fvm::div(*phi_, *U_) -
-                                fvm::laplacian(*nu_, *U_) -
-                                (*f_)/(*n_)
+      tmp<fvVectorMatrix> UEqn (fvm::div(*phi_, U) -
+                                fvm::laplacian(*nu_, U) -
+                                (beta*ubar-beta*U)/n
+
         );
 
       UEqn().relax();

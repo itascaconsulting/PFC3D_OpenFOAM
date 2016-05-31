@@ -14,7 +14,6 @@ with p2pLinkClient() as pfc_link:
     pfc_link.send_data(solver.mu())
 
     oldn = solver.n()
-    oldf = solver.f()
     r_factor = 1.0
 
     while True:
@@ -27,10 +26,13 @@ with p2pLinkClient() as pfc_link:
         newn = pfc_link.read_data()
         solver.n(oldn*(1-r_factor) + newn*r_factor)
         oldn=newn
-        newf = pfc_link.read_data()
-        print newf
-        solver.f(oldf*(1-r_factor) + newf*r_factor)
-        oldf=newf
+        beta = pfc_link.read_data()
+        print "beta", beta
+        ubar = pfc_link.read_data()
+        print "ubar", ubar
+
+        solver.beta(beta)
+        solver.ubar(ubar)
         print "got runtime and data"
 
         solver.solve()

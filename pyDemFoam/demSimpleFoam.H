@@ -44,7 +44,8 @@ public:
   //double dt() { return runTime_->deltaT().value(); }
   //void set_endtime(double t) { runTime_->setEndTime(t); }
   void run();
-  VEC_SETGET(f)
+  VEC_SETGET(ubar)
+  SETGET(beta)
   SETGET(n)
   VEC_SETGET(U)
   SETGET(p)
@@ -60,9 +61,11 @@ public:
   dimensionedScalar *rho_;
   volScalarField *p_;
   volVectorField *U_;
-  volVectorField *f_;
+  volVectorField *ubar_;
   volScalarField *n_;
   surfaceScalarField *phi_;
+  volScalarField *beta_;
+
   label pRefCell_;
   scalar pRefValue_;
 
