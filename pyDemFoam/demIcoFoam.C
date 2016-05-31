@@ -97,72 +97,56 @@ demIcoFoam::~demIcoFoam() {
 }
 
 void demIcoFoam::run(double time_increment) {
-  runTime_->setEndTime(runTime_->value() + time_increment);
-  while (runTime_->loop())
-  {
-    {
-      Info<< "Time = " << runTime_->timeName() << nl << endl;
-      scalar CoNum = 0.0;
-      scalar meanCoNum = 0.0;
-      if (mesh_->nInternalFaces())
-      {
-        scalarField sumPhi (fvc::surfaceSum(mag(*phi_))().internalField());
-        CoNum = 0.5*gMax(sumPhi/mesh_->V().field())*runTime_->deltaTValue();
-        meanCoNum =
-          0.5*(gSum(sumPhi)/gSum(mesh_->V().field()))*runTime_->deltaTValue();
-      }
-      Info<< "Courant Number mean: " << meanCoNum
-          << " max: " << CoNum << endl;
-    }
+  volVectorField        &U = *U_;
+  volVectorField        &f = *f_;
+  volScalarField        &n = *n_;
+  volScalarField        &p = *p_;
+  dimensionedScalar     &nu = *nu_;
+  surfaceScalarField    &phi = *phi_;
+  Foam::Time            &runTime = *runTime_;
+  Foam::fvMesh          &mesh = *mesh_;
+  scalar &cumulativeContErr = cumulativeContErr_;
 
+  runTime.setEndTime(runTime.value() + time_increment);
+  while (runTime.loop())
+  {
+    Info<< "Time = " << runTime.timeName() << nl << endl;
+    #include "CourantNo.H"
 
     fvVectorMatrix UEqn
-      (fvm::ddt(*n_,*U_) + (*n_)*fvm::div(*phi_, *U_) -
-       fvm::laplacian(*nu_, *U_) - *f_);
+      (fvm::ddt(U) + fvm::div(phi, U) -
+       fvm::laplacian(nu, U) - f/n);
 
     if (piso_->momentumPredictor())
-      solve(UEqn == -(*n_)*fvc::grad(*p_));
+      solve(UEqn == -fvc::grad(p));
 
     while (piso_->correct())
     {
       volScalarField rAU(1.0/UEqn.A());
 
-      volVectorField HbyA("HbyA", *U_);
+      volVectorField HbyA("HbyA", U);
       HbyA = rAU*UEqn.H();
       surfaceScalarField phiHbyA
         ("phiHbyA", (fvc::interpolate(HbyA) & mesh_->Sf()));
 
-      adjustPhi(phiHbyA, *U_, *p_);
+      adjustPhi(phiHbyA, U, p);
 
       while (piso_->correctNonOrthogonal())
       {
         fvScalarMatrix pEqn
-          (fvm::laplacian(rAU*(*n_)*(*n_), *p_) ==
-           fvc::div(fvc::interpolate(*n_)*phiHbyA) //+ dndt
+          (fvm::laplacian(rAU, p) ==
+           fvc::div(phiHbyA) //+ dndt
             );
         pEqn.setReference(pRefCell_, pRefValue_);
-        pEqn.solve(mesh_->solver(p_->select(piso_->finalInnerIter())));
-        if (piso_->finalNonOrthogonalIter()) *phi_ = phiHbyA - pEqn.flux();
+        pEqn.solve(mesh_->solver(p.select(piso_->finalInnerIter())));
+        if (piso_->finalNonOrthogonalIter()) phi = phiHbyA - pEqn.flux();
       }
 
-      {
-        //volScalarField contErr(fvc::div(fvc::interpolate(n)*phi)+dndt);
-        volScalarField contErr(fvc::div(fvc::interpolate(*n_)*(*phi_)));
 
-        scalar sumLocalContErr = runTime_->deltaTValue()*
-          mag(contErr)().weightedAverage(mesh_->V()).value();
+#include "continuityErrs.H"
 
-        scalar globalContErr = runTime_->deltaTValue()*
-          contErr.weightedAverage(mesh_->V()).value();
-        cumulativeContErr_ += globalContErr;
-
-        Info<< "time step continuity errors : sum local = " << sumLocalContErr
-            << ", global = " << globalContErr
-            << ", cumulative = " << cumulativeContErr_
-            << endl;
-      }
-      *U_ = HbyA - (*n_)*rAU*fvc::grad(*p_);
-      U_->correctBoundaryConditions();
+      U = HbyA - rAU*fvc::grad(p);
+      U.correctBoundaryConditions();
     }
     runTime_->write();
     Info<< "ExecutionTime = " << runTime_->elapsedCpuTime() << " s"

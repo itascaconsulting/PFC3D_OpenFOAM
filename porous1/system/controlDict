@@ -15,7 +15,7 @@ FoamFile
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-application     icoFoam;
+//application     icoFoam;
 
 startFrom       startTime;
 
@@ -23,7 +23,7 @@ startTime       0;
 
 stopAt          endTime;
 
-endTime         0.005;
+endTime         0.01;
 
 deltaT          0.005;
 

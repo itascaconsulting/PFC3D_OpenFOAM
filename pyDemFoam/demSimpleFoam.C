@@ -105,6 +105,10 @@ void demSimpleFoam::run() {
   volVectorField &ubar = *ubar_;
   volVectorField &U = *U_;
   volScalarField &n = *n_;
+  n.correctBoundaryConditions();
+  U.correctBoundaryConditions();
+  beta.correctBoundaryConditions();
+  ubar.correctBoundaryConditions();
 
   while (simple_->loop())
   {
@@ -188,6 +192,11 @@ void demSimpleFoam::run() {
         // Momentum corrector
         *U_ = HbyA - rAtU()*fvc::grad(*p_);
         U_->correctBoundaryConditions();
+  n.correctBoundaryConditions();
+  //U.correctBoundaryConditions();
+  beta.correctBoundaryConditions();
+  ubar.correctBoundaryConditions();
+
       }
 
     }
