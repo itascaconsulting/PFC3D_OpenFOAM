@@ -17,7 +17,7 @@ with p2pLinkClient() as pfc_link:
     oldf = solver.f()
     r_factor = 1.0
 
-    first = True
+    i = 0
     while True:
         print "waiting for run time"
         deltat = pfc_link.read_data()
@@ -33,9 +33,13 @@ with p2pLinkClient() as pfc_link:
         oldf=newf
         print "got runtime and data"
 
-        if first:
+        if i<3:
             solver.set_dt(deltat/1000.0)
-            first=False
+            solver.solve(deltat/1000.0)
+
+        elif i==3:
+            solver.set_dt(deltat/100.0)
+            solver.solve(deltat/100.0)
         else:
             solver.set_dt(deltat/100.0)
         solver.solve(deltat)
@@ -45,3 +49,4 @@ with p2pLinkClient() as pfc_link:
         pfc_link.send_data(solver.gradp()*solver.rho())
         pfc_link.send_data(solver.U())
         print "send finished"
+        i+=1
