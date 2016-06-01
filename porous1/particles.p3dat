@@ -28,4 +28,4 @@ history id  2 fish @ftime
 
 plot clear
 plot add hist 1 vs 2
-plot add cfdelement shape arrow colorby vectorattribute "velocity"
+plot add cfdelement shape arrow colorby vectorattribute "velocity" coloropt scaled ramp minimum 0.011 maximum 0.015 interval 0.0005

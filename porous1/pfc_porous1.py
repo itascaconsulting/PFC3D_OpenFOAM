@@ -39,13 +39,13 @@ with p2pLinkServer() as cfd_link:
     dt = 0.005
     oldu = ca.velocity()
     r_factor = 1.0
-    for i in range(100):
+    for i in range(20):
         it.command("solve age {}".format(it.mech_age()+dt))
         print "sending solve time"
         cfd_link.send_data(dt) # solve interval
         cfd_link.send_data(ca.porosity())
         new_force = (ca.drag().T/element_volume).T/fluid_density
-        cfd_link.send_data(np.zeros_like(new_force))
+        cfd_link.send_data(new_force)
         print " cfd solve started"
         ca.set_pressure(cfd_link.read_data())
         ca.set_pressure_gradient(cfd_link.read_data())
