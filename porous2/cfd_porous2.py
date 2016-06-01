@@ -1,9 +1,9 @@
 from itasca import p2pLinkClient
 import subprocess
 import numpy as np
-from pyDemSimpleFoam import pyDemSimpleFoam
+from pyDemFoam import pyDemIcoFoam
 
-solver = pyDemSimpleFoam()
+solver = pyDemIcoFoam()
 
 with p2pLinkClient() as pfc_link:
     pfc_link.connect("10.0.2.2")
@@ -17,6 +17,7 @@ with p2pLinkClient() as pfc_link:
     oldf = solver.f()
     r_factor = 1.0
 
+    first = True
     while True:
         print "waiting for run time"
         deltat = pfc_link.read_data()
@@ -32,7 +33,12 @@ with p2pLinkClient() as pfc_link:
         oldf=newf
         print "got runtime and data"
 
-        solver.solve()
+        if first:
+            solver.set_dt(deltat/1000.0)
+            first=False
+        else:
+            solver.set_dt(deltat/100.0)
+        solver.solve(deltat)
 
         print "sending data to pfc"
         pfc_link.send_data(solver.p()*solver.rho())

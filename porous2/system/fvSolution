@@ -13,7 +13,6 @@ FoamFile
   location    "system";
   object      fvSolution;
 }
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 solvers
 {
@@ -41,32 +40,3 @@ PISO
   pRefCell        0;
   pRefValue       0;
 }
-
-SIMPLE
-{
-
-  nNonOrthogonalCorrectors 0;
-  pRefCell        0;
-  pRefValue       0;
-
-  residualControl
-  {
-    p               1e-5;
-    U               1e-5;
-  }
-}
-
-relaxationFactors
-{
-  fields
-  {
-    p               0.3;
-  }
-  equations
-  {
-    U               0.7;
-  }
-}
-
-
-// ************************************************************************* //

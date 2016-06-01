@@ -22,7 +22,7 @@
   along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
   Application
-  demIcoFoam
+  demSimpleFoam
   \*---------------------------------------------------------------------------*/
 
 #include "demSimpleFoam.H"
@@ -105,37 +105,40 @@ void demSimpleFoam::run() {
   volVectorField &ubar = *ubar_;
   volVectorField &U = *U_;
   volScalarField &n = *n_;
-  n.correctBoundaryConditions();
-  U.correctBoundaryConditions();
-  beta.correctBoundaryConditions();
-  ubar.correctBoundaryConditions();
+  volScalarField        &p = *p_;
+  dimensionedScalar     &nu = *nu_;
+  surfaceScalarField    &phi = *phi_;
+  Foam::Time            &runTime = *runTime_;
+  Foam::fvMesh          &mesh = *mesh_;
+  scalar &cumulativeContErr = cumulativeContErr_;
+
 
   while (simple_->loop())
   {
-    Info<< "Time = " << runTime_->timeName() << nl << endl;
+    Info<< "Time = " << runTime.timeName() << nl << endl;
 
     // --- Pressure-velocity SIMPLE corrector
     {
       // Momentum predictor
-      tmp<fvVectorMatrix> UEqn (fvm::div(*phi_, U) -
-                                fvm::laplacian(*nu_, U) -
+      tmp<fvVectorMatrix> UEqn (fvm::div(phi, U) -
+                                fvm::laplacian(nu, U) -
                                 (beta*ubar-beta*U)/n
 
         );
 
       UEqn().relax();
 
-      solve(UEqn() == -fvc::grad(*p_));
+      solve(UEqn() == -fvc::grad(p));
 
       //#include "pEqn.H"
       {
         volScalarField rAU(1.0/UEqn().A());
-        volVectorField HbyA("HbyA", *U_);
+        volVectorField HbyA("HbyA", U);
         HbyA = rAU*UEqn().H();
 
         surfaceScalarField phiHbyA("phiHbyA", fvc::interpolate(HbyA) &
-                                   mesh_->Sf());
-        adjustPhi(phiHbyA, *U_, *p_);
+                                   mesh.Sf());
+        adjustPhi(phiHbyA, U, p);
 
         tmp<volScalarField> rAtU(rAU);
 
@@ -143,8 +146,8 @@ void demSimpleFoam::run() {
         {
           rAtU = 1.0/(1.0/rAU - UEqn().H1());
           phiHbyA +=
-            fvc::interpolate(rAtU() - rAU)*fvc::snGrad(*p_)*mesh_->magSf();
-          HbyA -= (rAU - rAtU())*fvc::grad(*p_);
+            fvc::interpolate(rAtU() - rAU)*fvc::snGrad(p)*mesh.magSf();
+          HbyA -= (rAU - rAtU())*fvc::grad(p);
         }
 
         UEqn.clear();
@@ -152,10 +155,7 @@ void demSimpleFoam::run() {
         // Non-orthogonal pressure corrector loop
         while (simple_->correctNonOrthogonal())
         {
-          fvScalarMatrix pEqn
-            (
-              fvm::laplacian(rAtU(), *p_) == fvc::div(phiHbyA)
-              );
+          fvScalarMatrix pEqn (fvm::laplacian(rAtU(), p) == fvc::div(phiHbyA));
 
           pEqn.setReference(pRefCell_, pRefValue_);
 
@@ -163,49 +163,24 @@ void demSimpleFoam::run() {
 
           if (simple_->finalNonOrthogonalIter())
           {
-            *phi_ = phiHbyA - pEqn.flux();
+            phi = phiHbyA - pEqn.flux();
           }
         }
 
-//#include "continuityErrs.H"
-      {
-        //volScalarField contErr(fvc::div(fvc::interpolate(n)*phi)+dndt);
-        //volScalarField contErr(fvc::div(fvc::interpolate(*n_)*(*phi_)));
-        volScalarField contErr(fvc::div(*phi_));
-
-        scalar sumLocalContErr = runTime_->deltaTValue()*
-          mag(contErr)().weightedAverage(mesh_->V()).value();
-
-        scalar globalContErr = runTime_->deltaTValue()*
-          contErr.weightedAverage(mesh_->V()).value();
-        cumulativeContErr_ += globalContErr;
-
-        Info<< "time step continuity errors : sum local = " << sumLocalContErr
-            << ", global = " << globalContErr
-            << ", cumulative = " << cumulativeContErr_
-            << endl;
-      }
+        #include "continuityErrs.H"
 
         // Explicitly relax pressure for momentum corrector
-        p_->relax();
+        p.relax();
 
         // Momentum corrector
-        *U_ = HbyA - rAtU()*fvc::grad(*p_);
-        U_->correctBoundaryConditions();
-  n.correctBoundaryConditions();
-  //U.correctBoundaryConditions();
-  beta.correctBoundaryConditions();
-  ubar.correctBoundaryConditions();
-
+        U = HbyA - rAtU()*fvc::grad(p);
+        U.correctBoundaryConditions();
       }
-
     }
+    runTime.write();
 
-
-    runTime_->write();
-
-    Info<< "ExecutionTime = " << runTime_->elapsedCpuTime() << " s"
-        << "  ClockTime = " << runTime_->elapsedClockTime() << " s"
+    Info<< "ExecutionTime = " << runTime.elapsedCpuTime() << " s"
+        << "  ClockTime = " << runTime.elapsedClockTime() << " s"
         << nl << endl;
   }
   Info << "SIMPLE Solve Ended. \n" << endl;
@@ -219,17 +194,5 @@ double demSimpleFoam::flux_on_patch(char *patch_name)
   if (inletPatchi == -1)
     throw std::runtime_error("Cannot find boundary patch");
   scalar massFlux = sum((*phi_).boundaryField()[inletPatchi]);
-
   return massFlux;
-
 }
-
-
-
-//   volScalarField dndt = (n-oldn)/runTime.deltaT();
-
-
-//   writeVectorField("u.dat", U);
-//   writeScalarField("p.dat", p);
-//   volVectorField gradp = fvc::grad(p);
-//   writeVectorField("gradp.dat", gradp);

@@ -1,7 +1,7 @@
 from itasca import p2pLinkClient
 import subprocess
 import numpy as np
-from pyDemIcoFoam import pyDemIcoFoam
+from pyDemFoam import pyDemIcoFoam
 
 solver = pyDemIcoFoam()
 
