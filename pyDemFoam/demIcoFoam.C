@@ -26,7 +26,7 @@
   \*---------------------------------------------------------------------------*/
 
 #include "demIcoFoam.H"
-
+#include <stdexcept>
 demIcoFoam::demIcoFoam() {
   Info << 0 << endl;
   int argc=1;

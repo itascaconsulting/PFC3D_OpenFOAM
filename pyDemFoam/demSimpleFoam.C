@@ -26,7 +26,7 @@
   \*---------------------------------------------------------------------------*/
 
 #include "demSimpleFoam.H"
-
+#include <stdexcept>
 demSimpleFoam::demSimpleFoam() {
   Info << 0 << endl;
   int argc=1;
