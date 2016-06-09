@@ -27,9 +27,9 @@ with p2pLinkClient() as pfc_link:
         solver.n(oldn*(1-r_factor) + newn*r_factor)
         oldn=newn
         beta = pfc_link.read_data()
-        print "beta", beta
+        #print "beta", beta
         ubar = pfc_link.read_data()
-        print "ubar", ubar
+        #print "ubar", ubar
 
         solver.beta(beta)
         solver.ubar(ubar)
