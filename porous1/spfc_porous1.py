@@ -73,5 +73,4 @@ with p2pLinkServer() as cfd_link:
 
     cfd_link.send_data(0.0)
 
-    print "ball z velocity", it.ball.find(1).vel_z()
-it.command('plot bitmap filename "porous1.png"')
+it.command('plot bitmap filename "simple_porous1.png"')
