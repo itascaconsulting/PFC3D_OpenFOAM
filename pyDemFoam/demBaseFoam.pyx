@@ -1,5 +1,5 @@
 # distutils: language = c++
-# distutils: sources = demIcoFoam.C
+# distutils: sources = demBaseFoam.C
 
 import numpy as np
 
@@ -91,31 +91,3 @@ cdef class pyDemBaseFoam:
 
     def solve(self, time_increment):
         self.thisptr.run(time_increment)
-
-
-cdef extern from "demIcoFoam.H":
-   cdef cppclass demIcoFoam(demBaseFoam):
-       demIcoFoam() except +
-       double f(int i, int j)
-       double set_f(int i, int j, double value)
-
-
-cdef class pyDemIcoFoam(pyDemBaseFoam):
-    cdef demIcoFoam *dthisptr
-    def __cinit__(self):
-        self.dthisptr = self.thisptr = new demIcoFoam()
-    def __dealloc__(self):
-        del self.thisptr
-
-    def f(self, value=None):
-        if value is None:
-            return np.array([[self.dthisptr.f(i,0),
-                              self.dthisptr.f(i,1),
-                              self.dthisptr.f(i,2)]
-                             for i in range(self.nCells())])
-        else:
-            value = np.asarray(value, dtype=np.double)
-            assert value.shape == (self.nCells(), 3)
-            for i in range(self.nCells()):
-                for j in range(3):
-                    self.dthisptr.set_f(i,j,value[i][j])

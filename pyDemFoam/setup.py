@@ -27,10 +27,11 @@ except:
     raise
 
 
-def foam_extension(name):
-    pname = "_pyD" + name[1:]
-    return Extension(pname,
-              sources=[pname+".pyx", name+".C", "demBaseFoam.C"],
+ext = [Extension("_pyDemFoam",
+              sources=["_pyDemFoam.pyx",
+                       "demIcoFoam.C",
+                       "demSimpleFoam.C",
+                       "demBaseFoam.C"],
               include_dirs = [
                   os.getenv("FOAM_SRC")+"/finiteVolume/lnInclude",
                   os.getenv("FOAM_SRC")+"/meshTools/lnInclude",
@@ -48,10 +49,8 @@ def foam_extension(name):
               libraries = ["finiteVolume", "meshTools", "OpenFOAM", "dl", "m"],
               library_dirs = [os.getenv("FOAM_LIBBIN")],
               language="c++",             # generate C++ code
-    )
+    )]
 
-ext = [foam_extension("demIcoFoam"),
-       foam_extension("demSimpleFoam")]
 
 setup(
     name = 'pyDemFoam',

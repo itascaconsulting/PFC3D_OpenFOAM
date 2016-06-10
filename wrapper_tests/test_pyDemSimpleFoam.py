@@ -21,7 +21,7 @@ print (abs(y-0.005)<1e-9).sum()
 solver.n(n)
 print 3
 
-solver.solve()
+solver.solve(0.0)
 print 4
 
 cc = solver.cell_centers()

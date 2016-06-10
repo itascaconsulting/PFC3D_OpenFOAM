@@ -6,3 +6,4 @@ polyMesh/
 /porous1/u.dat
 /porous1/vvec.pvsm
 0.*/
+/pyDemFoam/_pyDemFoam.cpp
