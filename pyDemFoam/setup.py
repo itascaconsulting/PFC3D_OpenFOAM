@@ -11,7 +11,6 @@ from Cython.Build import cythonize
 import os
 import string
 
-
 assert not os.getenv("FOAM_SRC") is None, "Cannot find OpenFOAM install. Did you source ~/OpenFOAM/OpenFOAM-v3.0+/etc/bashrc ?"
 
 assert os.path.isfile(os.getenv("FOAM_APPBIN")+"/icoFoam"), "Cannot find OpenFOAM binaries. Did you build OpenFOAM in the default location? "
@@ -28,11 +27,10 @@ except:
     raise
 
 
-
 def foam_extension(name):
     pname = "_pyD" + name[1:]
     return Extension(pname,
-              sources=[pname+".pyx", name+".C"],
+              sources=[pname+".pyx", name+".C", "demBaseFoam.C"],
               include_dirs = [
                   os.getenv("FOAM_SRC")+"/finiteVolume/lnInclude",
                   os.getenv("FOAM_SRC")+"/meshTools/lnInclude",
@@ -52,8 +50,8 @@ def foam_extension(name):
               language="c++",             # generate C++ code
     )
 
-ext = [foam_extension("demIcoFoam"),
-       foam_extension("demSimpleFoam")]
+ext = [foam_extension("demIcoFoam")] #,
+#foam_extension("demSimpleFoam")]
 
 setup(
     name = 'pyDemFoam',

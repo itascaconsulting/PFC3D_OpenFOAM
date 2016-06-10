@@ -1,10 +1,10 @@
-/*---------------------------------------------------------------------------*\
+/*-------------------------------------------------------------------------*\
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
   \\    /   O peration     |
   \\  /    A nd           | Copyright (C) 2011-2015 OpenFOAM Foundation
   \\/     M anipulation  |
-  -------------------------------------------------------------------------------
+  --------------------------------------------------------------------------
   License
   This file is not part of OpenFOAM.
 
@@ -23,7 +23,7 @@
 
   Application
   demSimpleFoam
-  \*---------------------------------------------------------------------------*/
+  \*-------------------------------------------------------------------------*/
 
 #include "demSimpleFoam.H"
 #include <stdexcept>
@@ -185,14 +185,4 @@ void demSimpleFoam::run() {
   }
   Info << "SIMPLE Solve Ended. \n" << endl;
 
-}
-
-
-double demSimpleFoam::flux_on_patch(char *patch_name)
-{
-  label inletPatchi = (*mesh_).boundaryMesh().findPatchID(patch_name);
-  if (inletPatchi == -1)
-    throw std::runtime_error("Cannot find boundary patch");
-  scalar massFlux = sum((*phi_).boundaryField()[inletPatchi]);
-  return massFlux;
 }

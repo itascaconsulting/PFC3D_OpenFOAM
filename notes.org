@@ -1,0 +1,18 @@
+
+
+\(
+\frac{\partial}{\partial t} \left(\epsilon \right) + \nabla\cdot\left(
+\epsilon u_f
+\right)
+\)
+
+
+\(
+\frac{\partial}{\partial t} \left(\epsilon u_f \right) +\nabla\left(
+\epsilon u_f u_f \right) = -\epsilon \nabla p + \epsilon \nu\nabla^2
+u_f
++\frac{\epsilon}{V_c\rho_f} B_i(u_{pi}-u_{fi})
+\)
+
+
+- Put node ordering into documentation.

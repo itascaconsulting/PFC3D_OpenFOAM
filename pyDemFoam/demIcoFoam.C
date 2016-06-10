@@ -4,7 +4,7 @@
   \\    /   O peration     |
   \\  /    A nd           | Copyright (C) 2011-2015 OpenFOAM Foundation
   \\/     M anipulation  |
-  -------------------------------------------------------------------------------
+  ----------------------------------------------------------------------------
   License
   This file is not part of OpenFOAM.
 
@@ -20,80 +20,25 @@
 
   You should have received a copy of the GNU General Public License
   along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
-
+no
   Application
   demIcoFoam
-  \*---------------------------------------------------------------------------*/
+  \*------------------------------------------------------------------------*/
 
 #include "demIcoFoam.H"
-#include <stdexcept>
+
 demIcoFoam::demIcoFoam() {
-  Info << 0 << endl;
-  int argc=1;
-  const char *argv[]={"demIcoFoam", NULL};
-  char ** argv2 = const_cast<char **>(argv);
-  args_ = new Foam::argList(argc, argv2);
-  if (!args_->checkRootCase()) Foam::FatalError.exit();
-  runTime_ = new Foam::Time(Foam::Time::controlDictName, *args_);
-  mesh_ = new Foam::fvMesh(Foam::IOobject (Foam::fvMesh::defaultRegion,
-                                           runTime_->timeName(),
-                                           *runTime_,
-                                           Foam::IOobject::MUST_READ));
-  piso_ = new pisoControl(*mesh_);
-  Info << mesh_->nCells() << endl;
-
-  // does it matter if this goes out of scope?
-  IOdictionary transportProperties(IOobject("transportProperties",
-                                            runTime_->constant(),
-                                            *mesh_,
-                                            IOobject::MUST_READ_IF_MODIFIED,
-                                            IOobject::NO_WRITE));
-
-  nu_ = new dimensionedScalar("nu", dimViscosity,
-                              transportProperties.lookup("nu"));
-  rho_ = new dimensionedScalar("rho", dimDensity,
-                               transportProperties.lookup("rho"));
-
-  p_ = new volScalarField (IOobject ("p", runTime_->timeName(), *mesh_,
-                                     IOobject::MUST_READ,
-                                     IOobject::AUTO_WRITE), *mesh_);
-  U_ = new volVectorField (IOobject ("U", runTime_->timeName(), *mesh_,
-                                     IOobject::MUST_READ,
-                                     IOobject::AUTO_WRITE), *mesh_);
+  Info << "creating demIcoFoam object" << nl << endl;
   f_ = new volVectorField(IOobject ("f", runTime_->timeName(), *mesh_,
                                     IOobject::MUST_READ,
                                     IOobject::AUTO_WRITE), *mesh_);
-  n_ = new volScalarField(IOobject ("n", runTime_->timeName(), *mesh_,
-                                    IOobject::MUST_READ,
-                                    IOobject::AUTO_WRITE), *mesh_);
-  phi_ = new surfaceScalarField (IOobject ("phi", runTime_->timeName(), *mesh_,
-                                           IOobject::READ_IF_PRESENT,
-                                           IOobject::AUTO_WRITE),
-                                 linearInterpolate(*U_) & mesh_->Sf());
-
-  pRefCell_ = 0;
-  pRefValue_ = 0.0;
-  setRefCell(*p_, mesh_->solutionDict().subDict("PISO"), pRefCell_, pRefValue_);
-  mesh_->setFluxRequired(p_->name());
-  gradp_ = new volVectorField(fvc:: grad(*p_));
-  cumulativeContErr_ = 0.0;
+  piso_ = new pisoControl(*mesh_);
 }
 
 demIcoFoam::~demIcoFoam() {
   Info << "cleaning up demIcoFoam" << nl << endl;
-  if (gradp_) delete gradp_;
-  if (phi_) delete phi_;
-  if (n_) delete n_;
-  if (f_) delete f_;
-  if (U_) delete U_;
-  if (p_) delete p_;
-  if (rho_) delete rho_;
-  if (nu_) delete nu_;
   if (piso_) delete piso_;
-  if (mesh_) delete mesh_;
-  if (runTime_) delete runTime_;
-  if (args_) delete args_;
-
+  if (f_) delete f_;
 }
 
 void demIcoFoam::run(double time_increment) {
@@ -138,7 +83,7 @@ void demIcoFoam::run(double time_increment) {
            fvc::div(phiHbyA) //+ dndt
             );
         pEqn.setReference(pRefCell_, pRefValue_);
-        pEqn.solve(mesh_->solver(p.select(piso_->finalInnerIter())));
+        pEqn.solve(mesh.solver(p.select(piso_->finalInnerIter())));
         if (piso_->finalNonOrthogonalIter()) phi = phiHbyA - pEqn.flux();
       }
 
@@ -148,31 +93,9 @@ void demIcoFoam::run(double time_increment) {
       U = HbyA - rAU*fvc::grad(p);
       U.correctBoundaryConditions();
     }
-    runTime_->write();
+    runTime.write();
     Info<< "ExecutionTime = " << runTime_->elapsedCpuTime() << " s"
         << "  ClockTime = " << runTime_->elapsedClockTime() << " s"
         << nl << endl;
   }
 }
-
-
-double demIcoFoam::flux_on_patch(char *patch_name)
-{
-  label inletPatchi = (*mesh_).boundaryMesh().findPatchID(patch_name);
-  if (inletPatchi == -1)
-    throw std::runtime_error("Cannot find boundary patch");
-  scalar massFlux = sum((*phi_).boundaryField()[inletPatchi]);
-
-  return massFlux;
-
-}
-
-
-
-//   volScalarField dndt = (n-oldn)/runTime.deltaT();
-
-
-//   writeVectorField("u.dat", U);
-//   writeScalarField("p.dat", p);
-//   volVectorField gradp = fvc::grad(p);
-//   writeVectorField("gradp.dat", gradp);
