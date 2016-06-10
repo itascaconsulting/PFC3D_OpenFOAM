@@ -1,20 +1,41 @@
 # distutils: language = c++
-# distutils: sources = demIcoFoam.C
+# distutils: sources = demIcoFoam.C demSimpleFoam.C demBaseFoam.C
 
 import numpy as np
 
-from demBaseFoam cimport demBaseFoam
+cdef extern from "demBaseFoam.H":
+   cdef cppclass demBaseFoam:
+       demBaseFoam() except +
+       int nCells()
+       double rho()
+       double nu()
+       int nNodes()
+       int nFaces()
+       int face_node(int face, int node)
+       int cell_face(int cell, int face)
+       double face_center(int face, int j)
+       double cell_flux(int cell, int face)
+       double node_pos(int i, int j)
+       int element(int i, int j)
+       double n(int i)
+       void set_n(int i, double v)
+       double p(int i)
+       double U(int i, int j)
+       double gradp(int i, int j)
+       double phi(int face) except +
+       void set_dt(double v)
+       double dt()
+       int cell_near(double x, double y, double z)
+       double cell_center(int cell, int j)
+       double cell_volume(int cell)
+       double flux_on_patch(char *patch_name) except +
+       void run(double t) except +
+
 
 cdef class pyDemBaseFoam:
     cdef demBaseFoam *thisptr
-    def __cinit__(self):
-        # we should not allocate here?
-        pass # self.thisptr = new demIcoFoam()
-
-    def __dealloc__(self):
-        # we do not want to free here?
-        pass #del self.thisptr
-
+    def __cinit__(self): pass
+    def __dealloc__(self): pass
     def nCells(self): return self.thisptr.nCells()
     def rho(self): return self.thisptr.rho()
     def nu(self): return self.thisptr.nu()
@@ -125,7 +146,7 @@ cdef class pyDemIcoFoam(pyDemBaseFoam):
                 for j in range(3):
                     self.dthisptr.set_f(i,j,value[i][j])
 
-###########################3
+###########################
 
 cdef extern from "demSimpleFoam.H":
    cdef cppclass demSimpleFoam(demBaseFoam):
