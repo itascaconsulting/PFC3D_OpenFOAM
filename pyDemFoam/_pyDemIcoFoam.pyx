@@ -1,41 +1,20 @@
 # distutils: language = c++
 # distutils: sources = demIcoFoam.C
+
 import numpy as np
-cdef extern from "demIcoFoam.H":
-   cdef cppclass demIcoFoam:
-       demIcoFoam() except +
-       int nCells()
-       double rho()
-       double nu()
-       int nNodes()
-       int nFaces()
-       int face_node(int face, int node)
-       int cell_face(int cell, int face)
-       double face_center(int face, int j)
-       double cell_flux(int cell, int face)
-       double node_pos(int i, int j)
-       int element(int i, int j)
-       double n(int i)
-       void set_n(int i, double v)
-       double p(int i)
-       double U(int i, int j)
-       double gradp(int i, int j)
-       double phi(int face) except +
-       void set_dt(double v)
-       double dt()
-       void run(double t) except +
-       int cell_near(double x, double y, double z)
-       double cell_center(int cell, int j)
-       double cell_volume(int cell)
-       double flux_on_patch(char *patch_name) except +
 
-       double f(int i, int j)
-       void set_f(int i, int j, double v)
+from demBaseFoam cimport demBaseFoam
 
-cdef class pyDemIcoFoam:
-    cdef demIcoFoam *thisptr
-    def __cinit__(self): self.thisptr = new demIcoFoam()
-    def __dealloc__(self): del self.thisptr
+cdef class pyDemBaseFoam:
+    cdef demBaseFoam *thisptr
+    def __cinit__(self):
+        # we should not allocate here?
+        pass # self.thisptr = new demIcoFoam()
+
+    def __dealloc__(self):
+        # we do not want to free here?
+        pass #del self.thisptr
+
     def nCells(self): return self.thisptr.nCells()
     def rho(self): return self.thisptr.rho()
     def nu(self): return self.thisptr.nu()
@@ -114,16 +93,29 @@ cdef class pyDemIcoFoam:
         self.thisptr.run(time_increment)
 
 
-    # derived
+cdef extern from "demIcoFoam.H":
+   cdef cppclass demIcoFoam(demBaseFoam):
+       demIcoFoam() except +
+       double f(int i, int j)
+       double set_f(int i, int j, double value)
+
+
+cdef class pyDemIcoFoam(pyDemBaseFoam):
+    cdef demIcoFoam *dthisptr
+    def __cinit__(self):
+        self.dthisptr = self.thisptr = new demIcoFoam()
+    def __dealloc__(self):
+        del self.thisptr
+
     def f(self, value=None):
         if value is None:
-            return np.array([[self.thisptr.f(i,0),
-                              self.thisptr.f(i,1),
-                              self.thisptr.f(i,2)]
+            return np.array([[self.dthisptr.f(i,0),
+                              self.dthisptr.f(i,1),
+                              self.dthisptr.f(i,2)]
                              for i in range(self.nCells())])
         else:
             value = np.asarray(value, dtype=np.double)
             assert value.shape == (self.nCells(), 3)
             for i in range(self.nCells()):
                 for j in range(3):
-                    self.thisptr.set_f(i,j,value[i][j])
+                    self.dthisptr.set_f(i,j,value[i][j])

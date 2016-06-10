@@ -1,3 +1,4 @@
+#pragma once
 #include "fvCFD.H"
 #include "pisoControl.H"
 #include "meshSearch.H"
