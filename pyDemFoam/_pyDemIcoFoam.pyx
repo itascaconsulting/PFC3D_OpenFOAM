@@ -15,8 +15,6 @@ cdef extern from "demIcoFoam.H":
        double cell_flux(int cell, int face)
        double node_pos(int i, int j)
        int element(int i, int j)
-       double f(int i, int j)
-       void set_f(int i, int j, double v)
        double n(int i)
        void set_n(int i, double v)
        double p(int i)
@@ -30,6 +28,9 @@ cdef extern from "demIcoFoam.H":
        double cell_center(int cell, int j)
        double cell_volume(int cell)
        double flux_on_patch(char *patch_name) except +
+
+       double f(int i, int j)
+       void set_f(int i, int j, double v)
 
 cdef class pyDemIcoFoam:
     cdef demIcoFoam *thisptr
@@ -79,19 +80,6 @@ cdef class pyDemIcoFoam:
         return np.array([[self.thisptr.element(i,j) for j in range(8)]
                          for i in range(self.nCells())])
 
-    def f(self, value=None):
-        if value is None:
-            return np.array([[self.thisptr.f(i,0),
-                              self.thisptr.f(i,1),
-                              self.thisptr.f(i,2)]
-                             for i in range(self.nCells())])
-        else:
-            value = np.asarray(value, dtype=np.double)
-            assert value.shape == (self.nCells(), 3)
-            for i in range(self.nCells()):
-                for j in range(3):
-                    self.thisptr.set_f(i,j,value[i][j])
-
     def n(self, value=None):
         if value is None:
             return np.array([self.thisptr.n(i)
@@ -124,3 +112,18 @@ cdef class pyDemIcoFoam:
 
     def solve(self, time_increment):
         self.thisptr.run(time_increment)
+
+
+    # derived
+    def f(self, value=None):
+        if value is None:
+            return np.array([[self.thisptr.f(i,0),
+                              self.thisptr.f(i,1),
+                              self.thisptr.f(i,2)]
+                             for i in range(self.nCells())])
+        else:
+            value = np.asarray(value, dtype=np.double)
+            assert value.shape == (self.nCells(), 3)
+            for i in range(self.nCells()):
+                for j in range(3):
+                    self.thisptr.set_f(i,j,value[i][j])

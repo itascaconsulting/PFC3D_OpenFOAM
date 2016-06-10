@@ -50,8 +50,8 @@ def foam_extension(name):
               language="c++",             # generate C++ code
     )
 
-ext = [foam_extension("demIcoFoam")] #,
-#foam_extension("demSimpleFoam")]
+ext = [foam_extension("demIcoFoam"),
+       foam_extension("demSimpleFoam")]
 
 setup(
     name = 'pyDemFoam',

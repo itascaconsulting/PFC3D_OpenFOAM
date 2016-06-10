@@ -1,10 +1,10 @@
-/*-------------------------------------------------------------------------*\
+/*---------------------------------------------------------------------*\
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
   \\    /   O peration     |
   \\  /    A nd           | Copyright (C) 2011-2015 OpenFOAM Foundation
   \\/     M anipulation  |
-  --------------------------------------------------------------------------
+  ---------------------------------------------------------------------
   License
   This file is not part of OpenFOAM.
 
@@ -23,84 +23,29 @@
 
   Application
   demSimpleFoam
-  \*-------------------------------------------------------------------------*/
+  \*--------------------------------------------------------------*/
 
 #include "demSimpleFoam.H"
-#include <stdexcept>
+
 demSimpleFoam::demSimpleFoam() {
-  Info << 0 << endl;
-  int argc=1;
-  const char *argv[]={"demSimpleFoam", NULL};
-  char ** argv2 = const_cast<char **>(argv);
-  args_ = new Foam::argList(argc, argv2);
-  if (!args_->checkRootCase()) Foam::FatalError.exit();
-  runTime_ = new Foam::Time(Foam::Time::controlDictName, *args_);
-  mesh_ = new Foam::fvMesh(Foam::IOobject (Foam::fvMesh::defaultRegion,
-                                           runTime_->timeName(),
-                                           *runTime_,
-                                           Foam::IOobject::MUST_READ));
-  simple_ = new simpleControl(*mesh_);
-  Info << mesh_->nCells() << endl;
+  Info << "creating demSimpleFoam object" << nl << endl;
 
-  // does it matter if this goes out of scope?
-  IOdictionary transportProperties(IOobject("transportProperties",
-                                            runTime_->constant(),
-                                            *mesh_,
-                                            IOobject::MUST_READ_IF_MODIFIED,
-                                            IOobject::NO_WRITE));
-
-  nu_ = new dimensionedScalar("nu", dimViscosity,
-                              transportProperties.lookup("nu"));
-  rho_ = new dimensionedScalar("rho", dimDensity,
-                               transportProperties.lookup("rho"));
-
-  p_ = new volScalarField (IOobject ("p", runTime_->timeName(), *mesh_,
-                                     IOobject::MUST_READ,
-                                     IOobject::AUTO_WRITE), *mesh_);
-  U_ = new volVectorField (IOobject ("U", runTime_->timeName(), *mesh_,
-                                     IOobject::MUST_READ,
-                                     IOobject::AUTO_WRITE), *mesh_);
   ubar_ = new volVectorField(IOobject ("ubar", runTime_->timeName(), *mesh_,
                                     IOobject::MUST_READ,
                                     IOobject::AUTO_WRITE), *mesh_);
-  n_ = new volScalarField(IOobject ("n", runTime_->timeName(), *mesh_,
-                                    IOobject::MUST_READ,
-                                    IOobject::AUTO_WRITE), *mesh_);
-  phi_ = new surfaceScalarField (IOobject ("phi", runTime_->timeName(), *mesh_,
-                                           IOobject::READ_IF_PRESENT,
-                                           IOobject::AUTO_WRITE),
-                                 linearInterpolate(*U_) & mesh_->Sf());
   beta_ = new volScalarField (IOobject ("beta", runTime_->timeName(), *mesh_,
                                      IOobject::MUST_READ,
                                      IOobject::AUTO_WRITE), *mesh_);
-
-  pRefCell_ = 0;
-  pRefValue_ = 0.0;
-  setRefCell(*p_, simple_->dict(), pRefCell_, pRefValue_);
-  mesh_->setFluxRequired(p_->name());
-  gradp_ = new volVectorField(fvc:: grad(*p_));
-  cumulativeContErr_ = 0.0;
+  simple_ = new simpleControl(*mesh_);
 }
 
 demSimpleFoam::~demSimpleFoam() {
   Info << "cleaning up demSimpleFoam" << nl << endl;
-  if (gradp_) delete gradp_;
-  if (phi_) delete phi_;
-  if (n_) delete n_;
   if (ubar_) delete ubar_;
   if (beta_) delete beta_;
-  if (U_) delete U_;
-  if (p_) delete p_;
-  if (rho_) delete rho_;
-  if (nu_) delete nu_;
-  if (simple_) delete simple_;
-  if (mesh_) delete mesh_;
-  if (runTime_) delete runTime_;
-  if (args_) delete args_;
-
 }
 
-void demSimpleFoam::run() {
+void demSimpleFoam::run(double) {
   volScalarField &beta = *beta_;
   volVectorField &ubar = *ubar_;
   volVectorField &U = *U_;
@@ -111,7 +56,6 @@ void demSimpleFoam::run() {
   Foam::Time            &runTime = *runTime_;
   Foam::fvMesh          &mesh = *mesh_;
   scalar &cumulativeContErr = cumulativeContErr_;
-
 
   while (simple_->loop())
   {
@@ -184,5 +128,4 @@ void demSimpleFoam::run() {
         << nl << endl;
   }
   Info << "SIMPLE Solve Ended. \n" << endl;
-
 }
