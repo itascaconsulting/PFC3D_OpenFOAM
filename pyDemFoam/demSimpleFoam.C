@@ -26,7 +26,7 @@
   \*---------------------------------------------------------------------------*/
 
 #include "demSimpleFoam.H"
-
+#include <stdexcept>
 demSimpleFoam::demSimpleFoam() {
   Info << 0 << endl;
   int argc=1;
@@ -122,8 +122,8 @@ void demSimpleFoam::run() {
       // Momentum predictor
       tmp<fvVectorMatrix> UEqn (fvm::div(phi, U) -
                                 fvm::laplacian(nu, U) -
-                                (beta*ubar-beta*U)/n
-
+                                beta*ubar/n -
+                                fvm::Sp(beta/n, U)
         );
 
       UEqn().relax();
