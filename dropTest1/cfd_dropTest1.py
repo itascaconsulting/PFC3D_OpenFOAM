@@ -1,5 +1,4 @@
 from itasca import p2pLinkClient
-import subprocess
 import numpy as np
 from pyDemFoam import pyDemIcoFoam
 
