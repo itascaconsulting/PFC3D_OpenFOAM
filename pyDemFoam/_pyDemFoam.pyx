@@ -36,18 +36,43 @@ cdef class pyDemBaseFoam:
     cdef demBaseFoam *thisptr
     def __cinit__(self): pass
     def __dealloc__(self): pass
-    def nCells(self): return self.thisptr.nCells()
-    def rho(self): return self.thisptr.rho()
-    def nu(self): return self.thisptr.nu()
-    def mu(self): return self.nu()*self.rho()
-    def nNodes(self): return self.thisptr.nNodes()
-    def nFaces(self): return self.thisptr.nFaces()
-    def set_dt(self, v): self.thisptr.set_dt(v)
-    def dt(self): return self.thisptr.dt()
-    def cell_near(self, x,y,z): return self.thisptr.cell_near(x,y,z)
-    def flux_on_patch(self, name): return self.thisptr.flux_on_patch(name)
+    def nCells(self):
+        """() -> int. Return the number of cells in the CFD mesh. """
+        return self.thisptr.nCells()
+    def rho(self):
+        """() -> float. Return the fluid density."""
+        return self.thisptr.rho()
+    def nu(self):
+        """() -> float. Return the fluid kinematic viscosity."""
+        return self.thisptr.nu()
+    def mu(self):
+        """() -> float. Return the fluid dynamic viscosity."""
+        return self.nu()*self.rho()
+    def nNodes(self):
+        """() -> int. Return the number of nodes in the CFD mesh."""
+        return self.thisptr.nNodes()
+    def nFaces(self):
+        """() -> int. Return the number of faces in the CFD mesh."""
+        return self.thisptr.nFaces()
+    def set_dt(self, v):
+        """(time_step: float) -> None. Set the OpenFOAM timestep."""
+        self.thisptr.set_dt(v)
+    def dt(self):
+        """() -> float. Return the OpenFOAM timestep."""
+        return self.thisptr.dt()
+    def cell_near(self, x,y,z):
+        """(x: float, y: float, z: float) -> int. Return the CFD mesh cell
+nearst the given point. Returns -1 if a call cannot be found."""
+        return self.thisptr.cell_near(x,y,z)
+    def flux_on_patch(self, name):
+        """(patch: string) -> float. Return the mass flux on the given boundary patch."""
+        return self.thisptr.flux_on_patch(name)
 
     def faces(self):
+        """() -> int array{n, 4}. Return an array of integers which describe
+the faces of the elements. n is the number of faces. The integers are
+indices into the nodes array.
+        """
         return np.array([[self.thisptr.face_node(i,j) for j in range(4)]
                          for i in range(self.nFaces())])
 
@@ -56,14 +81,17 @@ cdef class pyDemBaseFoam:
                          for i in range(self.nCells())])
 
     def face_centers(self):
+        """() -> float array{n,3}. Return an array giving the center of each face. n is the number of faces."""
         return np.array([[self.thisptr.face_center(i,j) for j in range(3)]
                          for i in range(self.nFaces())])
 
     def cell_centers(self):
+        """() -> float array{n,3}. Return an array of the center of each cell. n is the number of cells."""
         return np.array([[self.thisptr.cell_center(i,j) for j in range(3)]
                          for i in range(self.nCells())])
 
     def cell_volumes(self):
+        """() -> float array{n}. Return the volume of the cells."""
         return np.array([self.thisptr.cell_volume(i)
                          for i in range(self.nCells())])
 
@@ -72,6 +100,7 @@ cdef class pyDemBaseFoam:
                          for i in range(self.nCells())])
 
     def nodes(self):
+        """() -> array{n,3}. Return a numpy array of the CFD mesh node locations where n is the number of nodes in the mesh."""
         return np.array([[self.thisptr.node_pos(i,0),
                           self.thisptr.node_pos(i,1),
                           self.thisptr.node_pos(i,2)]
