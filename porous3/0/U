@@ -24,7 +24,7 @@ boundaryField
   {
 //    type            zeroGradient;
         type            fixedValue;
-        value           uniform (0 1e-2 0);
+        value           uniform (0 1e-4 0);
 
     // type       directionMixed;
     // refValue   uniform (0 0 0);
