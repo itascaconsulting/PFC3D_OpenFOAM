@@ -188,3 +188,9 @@ cd $WM_PROJECT_DIR/doc
 The Doxygen reference should be in `$WM_PROJECT_DIR/doc/Doxygen/html/index.html`
 
 python setup.py install --user > log.txt 2>&1 && tail log.txt
+
+## Other projects
+
+* OpenFOAM LAMMPS coupling: https://github.com/xiaoh/sediFoam
+
+* OpenFOAM YADE coupling: http://trace.tennessee.edu/utk_graddiss/21/
