@@ -31,6 +31,7 @@ ext = [Extension("_pyDemFoam",
               sources=["_pyDemFoam.pyx",
                        "demIcoFoam.C",
                        "demSimpleFoam.C",
+                       "demSimpleFoam2.C",
                        "demBaseFoam.C"],
               include_dirs = [
                   os.getenv("FOAM_SRC")+"/finiteVolume/lnInclude",
