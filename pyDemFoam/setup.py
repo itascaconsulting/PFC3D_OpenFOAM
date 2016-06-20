@@ -9,16 +9,29 @@ from distutils.core import setup
 from distutils.extension import Extension
 from Cython.Build import cythonize
 import os
+import string
 
 assert not os.getenv("FOAM_SRC") is None, "Cannot find OpenFOAM install. Did you source ~/OpenFOAM/OpenFOAM-v3.0+/etc/bashrc ?"
 
 assert os.path.isfile(os.getenv("FOAM_APPBIN")+"/icoFoam"), "Cannot find OpenFOAM binaries. Did you build OpenFOAM in the default location? "
 
 
-ext = [
-    Extension("_pyDemIcoFoam",
-              sources=["_pyDemIcoFoam.pyx",
-                       "demIcoFoam.C"],
+def get_version_number(module):
+    f = open(os.path.join(module, "__init__.py"))
+    return string.strip(f.readline().split("=")[1])[1:-1]
+
+try:
+    print "building version", get_version_number("pyDemFoam")
+except:
+    print "could not find version number in __init__.py"
+    raise
+
+
+ext = [Extension("_pyDemFoam",
+              sources=["_pyDemFoam.pyx",
+                       "demIcoFoam.C",
+                       "demSimpleFoam.C",
+                       "demBaseFoam.C"],
               include_dirs = [
                   os.getenv("FOAM_SRC")+"/finiteVolume/lnInclude",
                   os.getenv("FOAM_SRC")+"/meshTools/lnInclude",
@@ -36,19 +49,20 @@ ext = [
               libraries = ["finiteVolume", "meshTools", "OpenFOAM", "dl", "m"],
               library_dirs = [os.getenv("FOAM_LIBBIN")],
               language="c++",             # generate C++ code
-)]
+    )]
+
 
 setup(
-    name = 'pyDemIcoFoam',
-    packages = ["pyDemIcoFoam"], # this must be the same as the name above
-    version = __import__('itasca').__version__,
-    description = "Python wrapper for demIcoFoam.",
+    name = 'pyDemFoam',
+    packages = ["pyDemFoam"], # this must be the same as the name above
+    version = get_version_number("pyDemFoam"),
+    description = "Python wrapper for Dem OpenFoam solvers.",
     long_description = long_description,
     author = 'Jason Furtney',
     requires = ['numpy'],
     author_email = 'jkfurtney@gmail.com',
     url = "https://github.com/jkfurtney/PFC3D_OpenFOAM",
-    keywords = 'OpenFOAM,CFD,icoFoam,PFC3D,PFC,DEM'.split(","),
+    keywords = 'OpenFOAM,CFD,icoFoam,simpleFoam,PFC3D,PFC,DEM'.split(","),
     license          = "BSD",
     classifiers = [
         'Programming Language :: Python :: 2',

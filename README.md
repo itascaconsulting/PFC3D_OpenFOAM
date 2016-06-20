@@ -19,11 +19,13 @@ the approach of Tsuji. Porosity and body force fields are included in
 the Navier-Stokes equation to account for the presence of particles in
 the flow and these terms are linked to drag forces on the *PFC3D* particles.
 
-A modified version of the *OpenFOAM* `icoFoam` solver (`demIcoFoam`) is
-supplied. Currently, `demIcoFoam` only runs on Linux systems and *PFC3D*
-only runs on Windows systems. As a work around `demIcoFoam` is run
-inside of a *VirtualBox* Ubuntu guest. Python and TCP sockets are used
-to link `demIcoFoam` to *PFC3D*.
+A Python module `pyDemFoam` is included which contains modified
+versions of the *OpenFOAM* `icoFoam` and `simpleFoam` solvers. These
+solvers are modified to account for the presence of solid particles.
+Currently, *OpenFOAM* only runs on Linux systems and *PFC3D* only runs
+on Windows systems. As a work around *OpenFOAM* is run inside of a
+*VirtualBox* Ubuntu guest. Python and TCP sockets are used to link
+`demIcoFoam` to *PFC3D*.
 
 The following diagram gives an overview of the system.
 
@@ -106,11 +108,12 @@ find src applications -name "*.L" -type f | xargs sed -i -e 's=\(YY\_FLEX\_SUBMI
 At this point *OpenFOAM* should be built. Try `icoFoam -help` to
 confirm.
 
-## Building `demIcoFoam` and `pyDemIcoFoam`
+## Building `pyDemFoam`
 
-`demIcoFoam` is a modified version of the icoFoam *OpenFOAM* solver. It
-includes porosity and body force terms to account for the presence of
-the particles. `pyDemIcoFoam` is a Python wrapper for `demIcoFoam`
+`pyDemFoam` is a Python module which contains modified versions of
+*OpenFOAM* solvers. It includes porosity and body force terms to
+account for the presence of the particles. Modified version of both
+`icoFoam` and `simpleFoam` are provided.
 
 ```bash
 cd
@@ -118,7 +121,7 @@ mkdir src
 cd src
 git clone https://github.com/jkfurtney/PFC3D_OpenFOAM.git
 
-cd PFC3D_OpenFOAM/pyDemIcoFoam/
+cd PFC3D_OpenFOAM/pyDemFoam/
 python setup.py install --user
 ```
 
@@ -126,10 +129,10 @@ Test that this worked:
 
 ```bash
 cd ~
-python -c "import pyDemIcoFoam; print pyDemIcoFoam.__version__"
+python -c "import pyDemFoam; print pyDemFoam.__version__"
 ```
 
-A version number number like: `2016.05.24` should be shown if the
+A version number number like: `2016.06.09` should be shown if the
 installation worked correctly.
 
 # Running coupled problems
@@ -176,3 +179,25 @@ following ways:
 
 Documentation for *OpenFOAM* can be found here:
 http://cfd.direct/openfoam/documentation/
+
+## Building a local copy of the *OpenFOAM* documentation
+
+If you are exploring the *OpenFOAM* C++ code it is helpful to have a
+local copy of the OpenFOAM C++ API documentation. GNU Global can help
+navigating large source codes.
+
+```bash
+sudo apt-get install doxygen graphviz global
+cd $WM_PROJECT_DIR/doc
+./Allwmake
+```
+
+The Doxygen reference should be in `$WM_PROJECT_DIR/doc/Doxygen/html/index.html`
+
+python setup.py install --user > log.txt 2>&1 && tail log.txt
+
+## Other projects
+
+* OpenFOAM LAMMPS coupling: https://github.com/xiaoh/sediFoam
+
+* OpenFOAM YADE coupling: http://trace.tennessee.edu/utk_graddiss/21/
