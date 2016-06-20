@@ -7,6 +7,13 @@ of continuum mechanics problems. Particle Flow Code in Three
 Dimensions (*PFC3D*) is a discrete element code produced by Itasca
 Consulting Group.
 
+OPENFOAM® is a registered trade mark of OpenCFD Limited, producer and
+distributor of the OpenFOAM software. This offering is not approved or
+endorsed by OpenCFD Limited, producer and distributor of the OpenFOAM
+software and owner of the OPENFOAM® and OpenCFD® trade marks.
+
+Itasca Consulting Group does not provide support for *OpenFOAM*.
+
 The two-way coarse-grid coupling between *PFC3D* and *OpenFOAM* follows
 the approach of Tsuji. Porosity and body force fields are included in
 the Navier-Stokes equation to account for the presence of particles in
