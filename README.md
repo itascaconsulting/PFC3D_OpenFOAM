@@ -66,7 +66,7 @@ Install the `itasca` Python module with `pip install itasca`
 
 What follows here is a distillation of the instructions from here:
 
-https://openfoamwiki.net/index.php/Installation/Linux/OpenFOAM-2.4.0/Ubuntu#Ubuntu_16.04
+https://openfoamwiki.net/index.php/Installation/Linux/OpenFOAM%2B-3.0%2B/Ubuntu
 
 consult this link if you have problems.
 
