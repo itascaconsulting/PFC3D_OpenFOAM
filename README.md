@@ -70,6 +70,19 @@ https://openfoamwiki.net/index.php/Installation/Linux/OpenFOAM%2B-3.0%2B/Ubuntu
 
 consult this link if you have problems.
 
+First, download and unzip OpenFOAM v3.0+ and the third party
+dependencies with the following commands.
+
+```bash
+cd ~
+mkdir OpenFOAM
+cd OpenFOAM
+wget "http://downloads.sourceforge.net/openfoamplus/files/OpenFOAM-v3.0%2B.tgz?use_mirror=mesh" -O OpenFOAM-v3.0+.tgz
+wget "http://downloads.sourceforge.net/openfoamplus/files/ThirdParty-v3.0%2B.tgz?use_mirror=mesh" -O ThirdParty-v3.0+.tgz
+tar -xzf OpenFOAM-v3.0+.tgz
+tar -xzf ThirdParty-v3.0+.tgz
+```
+
 Add the following line to the end of: `~/.bashrc`
 
 `source $HOME/OpenFOAM/OpenFOAM-v3.0+/etc/bashrc WM_NCOMPPROCS=4 WM_MPLIB=SYSTEMOPENMPI`
