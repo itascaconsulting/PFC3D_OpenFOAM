@@ -24,7 +24,7 @@ versions of the *OpenFOAM* `icoFoam` and `simpleFoam` solvers. These
 solvers are modified to account for the presence of solid particles.
 Currently, *OpenFOAM* only runs on Linux systems and *PFC3D* only runs
 on Windows systems. As a work around *OpenFOAM* is run inside of a
-*VirtualBox* Ubuntu guest. Python and TCP sockets are used to link
+*VirtualBox* Ubuntu guest or Windows Subsystem for Linux (WSL). Python and TCP sockets are used to link
 `demIcoFoam` to *PFC3D*.
 
 The following diagram gives an overview of the system.
@@ -36,7 +36,7 @@ The following diagram gives an overview of the system.
 
 Update to the latest *PFC3D* version: http://www.itascacg.com
 
-## Setting up *VirtualBox*
+## Setting up *Ubuntu*
 
 Install VirtualBox 5.0.20 or newer http://download.virtualbox.org/virtualbox/5.0.20/VirtualBox-5.0.20-106931-Win.exe
 
@@ -45,6 +45,8 @@ Install Ubuntu 16.04 into VirtualBox http://www.ubuntu.com/download/desktop
 Install the VirtualBox Linux Guest Additions: In the Virtual Box
 window select Devices > Insert the Guest Additions CD Image. Follow
 the on screen instructions.
+
+OR install Ubuntu 16.04 WSL https://docs.microsoft.com/en-us/windows/wsl/install-win10
 
 Make sure you Ubuntu environment is current with:
 
