@@ -5,7 +5,8 @@ from pyDemFoam import pyDemIcoFoam
 solver = pyDemIcoFoam()
 
 with p2pLinkClient() as pfc_link:
-    pfc_link.connect("10.0.2.2")
+    pfc_link.connect("10.0.2.2") # for VirtualBox
+    #pfc_link.connect("")        # for WSL
 
     pfc_link.send_data(solver.nodes())
     pfc_link.send_data(solver.elements())
