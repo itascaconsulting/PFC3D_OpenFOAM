@@ -81,14 +81,9 @@ wget "http://downloads.sourceforge.net/openfoamplus/files/OpenFOAM-v3.0%2B.tgz?u
 wget "http://downloads.sourceforge.net/openfoamplus/files/ThirdParty-v3.0%2B.tgz?use_mirror=mesh" -O ThirdParty-v3.0+.tgz
 tar -xzf OpenFOAM-v3.0+.tgz
 tar -xzf ThirdParty-v3.0+.tgz
+echo "source ~/OpenFOAM/OpenFOAM-v3.0+/etc/bashrc WM_NCOMPPROCS=4 WM_MPLIB=SYSTEMOPENMPI" >> ~/.bashrc
+source ~/.bashrc
 ```
-
-Add the following line to the end of: `~/.bashrc`
-
-`source $HOME/OpenFOAM/OpenFOAM-v3.0+/etc/bashrc WM_NCOMPPROCS=4 WM_MPLIB=SYSTEMOPENMPI`
-
-To load these changes:
-`source ~/.bashrc`
 
 
 ### Building *ParaView*
