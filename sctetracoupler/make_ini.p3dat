@@ -1,0 +1,27 @@
+new
+
+[dp = 0.5*1.5e-3]
+domain extent -0.5e-2 4.5e-2 -0.5e-2 20.5e-2 -0.5e-2 1.25e-2 
+
+wall generate box 0.0 4.0e-2 0.0 20.0e-2 0.0 0.75e-2
+wall tolerance etolerance 0.0 ctol [0.1*dp]
+
+cmat default model linear property kn 1e5 ks 1e5 fric 0.25 dp_nratio 0.2
+
+set gravity 0.0 -9.81 0.0
+
+ball generate number 5000 radius [0.5*dp] box 0.0 4.0e-2 0.0 6.0e-2 0.0 0.75e-2 
+
+ball attribute density 2000.0 damp 0.7
+
+solve aratio 1e-3
+
+ball attribute damp 0.0
+cycle 10
+solve aratio 1e-3
+calm
+save ini2
+
+return
+wall generate plane position 0.0 10.0e-2 0.0 dip 90.0
+save ini-wall
