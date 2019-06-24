@@ -1,19 +1,26 @@
 import itasca as it
 from itasca import cfdarray as ca
+from itasca import ballarray as ba
 from itasca.util import p2pLinkServer
 import numpy as np
+from scipy.spatial import cKDTree
 
 class pfc_coupler(object):
     def __init__(self):
         self.link = p2pLinkServer()
         self.link.start()
         
-        nodes = self.link.read_data()
-        elements = self.link.read_data()
+        self.nodes = self.link.read_data()
+        self.elements = self.link.read_data()
+        self.nbElem = self.elements.shape[0]
+        self.cell_centers = self.link.read_data()
+        self.cell_volumes = self.link.read_data()
         self.fluid_density = self.link.read_data()
-        fluid_viscosity = self.link.read_data()
+        self.fluid_viscosity = self.link.read_data()
+        self.elements_tree = cKDTree(self.cell_centers)
+        
         #print fluid_density, fluid_viscosity
-        nmin, nmax = np.amin(nodes,axis=0), np.amax(nodes,axis=0)
+        nmin, nmax = np.amin(self.nodes,axis=0), np.amax(self.nodes,axis=0)
         diag = np.linalg.norm(nmin-nmax)
         dmin, dmax = nmin-0.1*diag, nmax+0.1*diag
         #print dmin, dmax
@@ -24,13 +31,13 @@ class pfc_coupler(object):
         """.format(dmin[0], dmax[0],
                    dmin[1], dmax[1],
                    dmin[2], dmax[2]))
-        ca.create_mesh(nodes, elements)
+        ca.create_mesh(self.nodes, self.elements)
         it.command("""
         config cfd
         set timestep max 1e-5
         element cfd ini density {}
         element cfd ini visc {}
-        """.format(self.fluid_density, fluid_viscosity))
+        """.format(self.fluid_density, self.fluid_viscosity))
 
     def solve(self):
         element_volume = ca.volume()

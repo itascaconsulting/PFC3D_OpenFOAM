@@ -10,6 +10,8 @@ with p2pLinkClient() as pfc_link:
 
     pfc_link.send_data(solver.nodes())
     pfc_link.send_data(solver.elements())
+    pfc_link.send_data(solver.cell_centers())
+    pfc_link.send_data(solver.cell_volumes())
     pfc_link.send_data(solver.rho())
     pfc_link.send_data(solver.mu())
 
