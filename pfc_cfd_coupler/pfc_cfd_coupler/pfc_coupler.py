@@ -5,7 +5,7 @@ from itasca.util import p2pLinkServer
 import numpy as np
 from scipy.spatial import cKDTree
 
-class pfc_coupler(object):
+class pfc_coupler2(object):
     def __init__(self):
         self.link = p2pLinkServer()
         self.link.start()
@@ -13,11 +13,11 @@ class pfc_coupler(object):
         self.nodes = self.link.read_data()
         self.elements = self.link.read_data()
         self.nbElem = self.elements.shape[0]
-        self.cell_centers = self.link.read_data()
+        self.elements_pos = self.link.read_data()
         self.cell_volumes = self.link.read_data()
         self.fluid_density = self.link.read_data()
         self.fluid_viscosity = self.link.read_data()
-        self.elements_tree = cKDTree(self.cell_centers)
+        self.elements_tree = cKDTree(self.elements_pos)
         
         #print fluid_density, fluid_viscosity
         nmin, nmax = np.amin(self.nodes,axis=0), np.amax(self.nodes,axis=0)
@@ -38,6 +38,32 @@ class pfc_coupler(object):
         element cfd ini density {}
         element cfd ini visc {}
         """.format(self.fluid_density, self.fluid_viscosity))
+
+    def update_weights(self):
+        bandwidth = 10.0e-3
+        bpos = ba.pos()
+        btree = cKDTree(bpos,5)
+        bmaps = btree.query_ball_tree(self.elements_tree,bandwidth)
+        self.wmap=numpy.array([[None]*self.nbElem for x in bmaps],dtype='d')
+        for ib,clist in numpy.ndenumerate(bmaps):
+          bp = bpos[ib]
+          wlist = [0]*self.nbElem
+          for ic in clist:
+            dv  = (vec((bp-self.elements_pos[ic]))).mag()
+            assert(dv<1)
+            wbc = self.kfunc(dv,bandwidth)
+            wlist[ic] = wbc
+          self.wmap[ib] = wlist
+        self.wmap /= self.wmap.sum(axis=1, keepdims=True)
+    
+    def kfunc(self,d,b):
+        return math.exp(-(d/b)**2)
+    
+    def updatePorosityAndDrag(self):
+        #update porosity
+        print "Updating Porosity..."
+        
+        self.update_weights()
 
     def solve(self):
         element_volume = ca.volume()

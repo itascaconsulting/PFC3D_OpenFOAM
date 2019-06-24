@@ -1,7 +1,7 @@
 import itasca as it
-from pfc_cfd_coupler.pfc_coupler import pfc_coupler
+from pfc_cfd_coupler.pfc_coupler import pfc_coupler2
 
-coupler = pfc_coupler()
+coupler = pfc_coupler2()
 it.command("""
 cfd porosity poly
 cfd buoy on
