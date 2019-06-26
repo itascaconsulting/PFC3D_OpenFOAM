@@ -61,11 +61,21 @@ class pfc_coupler(object):
     def kfunc(self,d,b):
         return math.exp(-(d/b)**2)
     
-    def updatePorosityAndDrag(self):
+    def updatePorosity(self):
         #update porosity
         print "Updating Porosity..."
         
         self.update_weights()
+        
+        # backward interpolations
+        bvol = ba.mass_real() / ba.density()
+        testdv = bvol - (self.wmap.T*bvol).sum(axis=0)
+        assert(testdv.sum()<1e-20)
+        
+        # volume fraction and porosity in each cell
+        evfracV = (self.wmap.T*bvol).sum(axis=1) 
+        evfrac = evfracV / self.elements_vol
+        self.elements_porosity = np.ones_like(evfrac) - evfrac
 
     def solve(self):
         element_volume = ca.volume()
@@ -73,13 +83,11 @@ class pfc_coupler(object):
         
         for i in range(100):
             it.command("solve age {}".format(it.mech_age()+dt))
-            self.updatePorosityAndDrag()
+            self.updatePorosity()
             print "sending solve time"
             self.link.send_data(dt) # solve interval
-            #self.link.send_data(ca.porosity())
-            #self.link.send_data((ca.drag().T/element_volume).T/self.fluid_density)
-            self.link.send_data(self.elements_porosity())
-            self.link.send_data((self.elements_drag().T/element_volume).T/self.fluid_density)
+            self.link.send_data(self.elements_porosity)
+            self.link.send_data((ca.drag().T/element_volume).T/self.fluid_density)
             print " cfd solve started"
             ca.set_pressure(self.link.read_data())
             ca.set_pressure_gradient(self.link.read_data())
