@@ -4,8 +4,10 @@ from itasca import ballarray as ba
 from itasca.util import p2pLinkServer
 import numpy as np
 from scipy.spatial import cKDTree
+from vec import vec
+import math
 
-class pfc_coupler2(object):
+class pfc_coupler(object):
     def __init__(self):
         self.link = p2pLinkServer()
         self.link.start()
@@ -14,7 +16,7 @@ class pfc_coupler2(object):
         self.elements = self.link.read_data()
         self.nbElem = self.elements.shape[0]
         self.elements_pos = self.link.read_data()
-        self.cell_volumes = self.link.read_data()
+        self.elements_vol = self.link.read_data()
         self.fluid_density = self.link.read_data()
         self.fluid_viscosity = self.link.read_data()
         self.elements_tree = cKDTree(self.elements_pos)
@@ -40,15 +42,15 @@ class pfc_coupler2(object):
         """.format(self.fluid_density, self.fluid_viscosity))
 
     def update_weights(self):
-        bandwidth = 10.0e-3
+        bandwidth = 0.15
         bpos = ba.pos()
         btree = cKDTree(bpos,5)
         bmaps = btree.query_ball_tree(self.elements_tree,bandwidth)
-        self.wmap=numpy.array([[None]*self.nbElem for x in bmaps],dtype='d')
-        for ib,clist in numpy.ndenumerate(bmaps):
+        self.wmap=np.array([[None]*self.nbElem for x in bmaps],dtype='d')
+        for ib in range(bpos.shape[0]):
           bp = bpos[ib]
           wlist = [0]*self.nbElem
-          for ic in clist:
+          for ic in bmaps[ib]:
             dv  = (vec((bp-self.elements_pos[ic]))).mag()
             assert(dv<1)
             wbc = self.kfunc(dv,bandwidth)
@@ -71,10 +73,13 @@ class pfc_coupler2(object):
         
         for i in range(100):
             it.command("solve age {}".format(it.mech_age()+dt))
+            self.updatePorosityAndDrag()
             print "sending solve time"
             self.link.send_data(dt) # solve interval
-            self.link.send_data(ca.porosity())
-            self.link.send_data((ca.drag().T/element_volume).T/self.fluid_density)
+            #self.link.send_data(ca.porosity())
+            #self.link.send_data((ca.drag().T/element_volume).T/self.fluid_density)
+            self.link.send_data(self.elements_porosity())
+            self.link.send_data((self.elements_drag().T/element_volume).T/self.fluid_density)
             print " cfd solve started"
             ca.set_pressure(self.link.read_data())
             ca.set_pressure_gradient(self.link.read_data())
