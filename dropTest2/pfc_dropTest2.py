@@ -19,6 +19,7 @@ plot add hist 1 vs 2
 plot add cfdelement shape arrow colorby vectorattribute "velocity"
 """)
 
-coupler.solve()
+coupler.dt = 0.005
+coupler.solve(100)
 
 print "ball z velocity", it.ball.find(1).vel_z()

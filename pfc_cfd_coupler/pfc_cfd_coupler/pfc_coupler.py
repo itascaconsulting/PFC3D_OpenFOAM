@@ -20,6 +20,7 @@ class pfc_coupler(object):
         self.fluid_density = self.link.read_data()
         self.fluid_viscosity = self.link.read_data()
         self.elements_tree = cKDTree(self.elements_pos)
+        self.dt = 0.005
         
         #print fluid_density, fluid_viscosity
         nmin, nmax = np.amin(self.nodes,axis=0), np.amax(self.nodes,axis=0)
@@ -77,15 +78,14 @@ class pfc_coupler(object):
         evfrac = evfracV / self.elements_vol
         self.elements_porosity = np.ones_like(evfrac) - evfrac
 
-    def solve(self):
+    def solve(self,nsteps):
         element_volume = ca.volume()
-        dt = 0.005
         
-        for i in range(100):
-            it.command("solve age {}".format(it.mech_age()+dt))
+        for i in range(nsteps):
+            it.command("solve age {}".format(it.mech_age()+self.dt))
             self.updatePorosity()
             print "sending solve time"
-            self.link.send_data(dt) # solve interval
+            self.link.send_data(self.dt) # solve interval
             self.link.send_data(self.elements_porosity)
             self.link.send_data((ca.drag().T/element_volume).T/self.fluid_density)
             print " cfd solve started"
