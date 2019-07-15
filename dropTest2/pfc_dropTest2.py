@@ -20,6 +20,7 @@ plot add cfdelement shape arrow colorby vectorattribute "velocity"
 """)
 
 coupler.dt = 0.005
-coupler.solve(100)
+coupler.solve(20)
+coupler.close()
 
 print "ball z velocity", it.ball.find(1).vel_z()
