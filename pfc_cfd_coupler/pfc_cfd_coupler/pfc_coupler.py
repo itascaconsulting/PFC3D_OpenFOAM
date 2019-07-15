@@ -1,5 +1,4 @@
 import itasca as it
-from itasca import cfdarray as ca
 from itasca import ballarray as ba
 from itasca.util import p2pLinkServer
 import numpy as np
@@ -14,33 +13,28 @@ class pfc_coupler(object):
         
         self.nodes = self.link.read_data()
         self.elements = self.link.read_data()
-        self.nbElem = self.elements.shape[0]
         self.elements_pos = self.link.read_data()
         self.elements_vol = self.link.read_data()
         self.fluid_density = self.link.read_data()
         self.fluid_viscosity = self.link.read_data()
+        
+        self.nbElem = self.elements.shape[0]
+        self.elements_visc = np.array([self.fluid_viscosity]*self.nbElem)
         self.elements_tree = cKDTree(self.elements_pos)
+        self.elements_vel = np.array([[0,0,0]]*self.nbElem)
         self.dt = 0.005
         
-        #print fluid_density, fluid_viscosity
         nmin, nmax = np.amin(self.nodes,axis=0), np.amax(self.nodes,axis=0)
         diag = np.linalg.norm(nmin-nmax)
         dmin, dmax = nmin-0.1*diag, nmax+0.1*diag
-        #print dmin, dmax
         
         it.command("""
         new
+        set timestep max 1e-5
         domain extent {} {} {} {} {} {}
         """.format(dmin[0], dmax[0],
                    dmin[1], dmax[1],
                    dmin[2], dmax[2]))
-        ca.create_mesh(self.nodes, self.elements)
-        it.command("""
-        config cfd
-        set timestep max 1e-5
-        element cfd ini density {}
-        element cfd ini visc {}
-        """.format(self.fluid_density, self.fluid_viscosity))
 
     def update_weights(self):
         bandwidth = 0.15
@@ -62,7 +56,7 @@ class pfc_coupler(object):
     def kfunc(self,d,b):
         return math.exp(-(d/b)**2)
     
-    def updatePorosity(self):
+    def updatePorosityAndDrag(self):
         #update porosity
         print "Updating Porosity..."
         
@@ -77,20 +71,64 @@ class pfc_coupler(object):
         evfracV = (self.wmap.T*bvol).sum(axis=1) 
         evfrac = evfracV / self.elements_vol
         self.elements_porosity = np.ones_like(evfrac) - evfrac
+        
+        bdrag = -1.0*ba.force_app()
+        self.elements_drag = (np.einsum('ik,ij',self.wmap,bdrag)/self.elements_vol).T
+
+    def updateForce(self):
+        self.update_weights()
+        
+        #forward interpolations:
+        
+        self.testcv = (self.wmap*self.elements_vol).sum(axis=0)
+        # testcv is equal to evol for each populated cell 
+        
+        #bvf is the fluid velocity for each ball
+        bvf   = np.einsum('ij,jk->ik',self.wmap,self.elements_vel)
+        bvisc = np.einsum('ij,j...->i...'  ,self.wmap,self.elements_visc)
+        bporo = np.einsum('ij,j...->i...'  ,self.wmap,self.elements_porosity)
+        
+        self.bvf = bvf
+        #ba.set_extra(1,bvf)
+        rho_f = self.fluid_density
+        brad = ba.radius()
+        brad2 = ba.radius()**2
+        
+        #buoyancy = np.zeros((brad2.shape[0],3))
+        #buoyancy[:,2] = -4.0 / 3.0 * np.pi * brad**3 * rho_f * it.gravity_z()
+        
+        ball_vel = ba.vel()
+        rel = (bvf-ball_vel)
+        force = np.full(ba.force_app().shape,0.0).T
+        if rel.sum() != 0.0 :
+            Reynolds = 2.0*rho_f*brad*np.linalg.norm(rel.T)/ bvisc.T
+            Cd = (0.63+4.8/np.sqrt(Reynolds))**2
+            Chi = 3.7-0.65*np.exp(-(1.5-np.log10(Reynolds))**2/2.0)
+            force = 0.5*rho_f*np.pi*brad2*Cd*rel.T*np.linalg.norm(rel.T)*np.power(bporo,-1.0*Chi) #+ buoyancy.T
+        
+        ba.set_force_app(force.T)  
 
     def solve(self,nsteps):
-        element_volume = ca.volume()
-        
+        self.updatePorosityAndDrag()
+        self.updateForce()
         for i in range(nsteps):
             it.command("solve age {}".format(it.mech_age()+self.dt))
-            self.updatePorosity()
+            self.updatePorosityAndDrag()
             print "sending solve time"
             self.link.send_data(self.dt) # solve interval
             self.link.send_data(self.elements_porosity)
-            self.link.send_data((ca.drag().T/element_volume).T/self.fluid_density)
+            self.link.send_data((self.elements_drag.T/self.elements_vol).T/self.fluid_density)
             print " cfd solve started"
-            ca.set_pressure(self.link.read_data())
-            ca.set_pressure_gradient(self.link.read_data())
-            ca.set_velocity(self.link.read_data())
+            self.pressure = self.link.read_data()
+            self.pressure_gradient = self.link.read_data()
+            self.elements_vel = self.link.read_data()
             print " cfd solve ended"
-        self.link.send_data(0.0) # solve interval
+            self.updateForce()
+        self.stopSolve()
+
+    def stopSolve(self):
+        self.link.send_data(0.0)
+
+    def close(self):
+        self.link.close()
+        del self.link    
