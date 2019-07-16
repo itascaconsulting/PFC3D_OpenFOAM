@@ -19,8 +19,8 @@ plot add axes
 plot add domain
 """)
 
-coupler.dt = 0.005
-coupler.solve(200)
+coupler.dt = 0.001
+coupler.solve(500)
 coupler.close()
 
 print "ball z velocity", it.ball.find(1).vel_z()

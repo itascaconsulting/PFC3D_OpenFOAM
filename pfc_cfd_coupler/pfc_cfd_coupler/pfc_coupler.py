@@ -57,9 +57,6 @@ class pfc_coupler(object):
         return math.exp(-(d/b)**2)
     
     def updatePorosityAndDrag(self):
-        #update porosity
-        print "Updating Porosity..."
-        
         self.update_weights()
         
         # backward interpolations
@@ -72,7 +69,7 @@ class pfc_coupler(object):
         evfrac = evfracV / self.elements_vol
         self.elements_porosity = np.ones_like(evfrac) - evfrac
         
-        bdrag = -1.0*ba.force_app()
+        bdrag = -1.0*ba.force_unbal()
         self.elements_drag = (np.einsum('ik,ij',self.wmap,bdrag)/self.elements_vol).T
 
     def updateForce(self):
@@ -94,8 +91,8 @@ class pfc_coupler(object):
         brad = ba.radius()
         brad2 = ba.radius()**2
         
-        #buoyancy = np.zeros((brad2.shape[0],3))
-        #buoyancy[:,2] = -4.0 / 3.0 * np.pi * brad**3 * rho_f * it.gravity_z()
+        buoyancy = np.zeros((brad2.shape[0],3))
+        buoyancy[:,2] = -4.0 / 3.0 * np.pi * brad**3 * rho_f * it.gravity_z()
         
         ball_vel = ba.vel()
         rel = (bvf-ball_vel)
@@ -104,7 +101,7 @@ class pfc_coupler(object):
             Reynolds = 2.0*rho_f*brad*np.linalg.norm(rel.T)/ bvisc.T
             Cd = (0.63+4.8/np.sqrt(Reynolds))**2
             Chi = 3.7-0.65*np.exp(-(1.5-np.log10(Reynolds))**2/2.0)
-            force = 0.5*rho_f*np.pi*brad2*Cd*rel.T*np.linalg.norm(rel.T)*np.power(bporo,-1.0*Chi) #+ buoyancy.T
+            force = 0.5*rho_f*np.pi*brad2*Cd*rel.T*np.linalg.norm(rel.T)*np.power(bporo,-1.0*Chi) + buoyancy.T
         
         ba.set_force_app(force.T)  
 
@@ -114,15 +111,12 @@ class pfc_coupler(object):
         for i in range(nsteps):
             it.command("solve age {}".format(it.mech_age()+self.dt))
             self.updatePorosityAndDrag()
-            print "sending solve time"
             self.link.send_data(self.dt) # solve interval
             self.link.send_data(self.elements_porosity)
             self.link.send_data((self.elements_drag.T/self.elements_vol).T/self.fluid_density)
-            print " cfd solve started"
             self.pressure = self.link.read_data()
             self.pressure_gradient = self.link.read_data()
             self.elements_vel = self.link.read_data()
-            print " cfd solve ended"
             self.updateForce()
         self.stopSolve()
 
