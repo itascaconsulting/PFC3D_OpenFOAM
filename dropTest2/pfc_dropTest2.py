@@ -17,10 +17,12 @@ plot add hist 1 vs 2
 plot add ball shape arrow
 plot add axes
 plot add domain
+plot add udvector
 """)
 
 coupler.dt = 0.001
-coupler.solve(500)
+coupler.solve(100)
+coupler.plotFluidUnitVel()
 coupler.close()
 
 print "ball z velocity", it.ball.find(1).vel_z()

@@ -32,9 +32,7 @@ class pfc_coupler(object):
         new
         set timestep max 1e-5
         domain extent {} {} {} {} {} {}
-        """.format(dmin[0], dmax[0],
-                   dmin[1], dmax[1],
-                   dmin[2], dmax[2]))
+        """.format(dmin[0], dmax[0], dmin[1], dmax[1], dmin[2], dmax[2]))
 
     def update_weights(self):
         bandwidth = 0.15
@@ -104,6 +102,20 @@ class pfc_coupler(object):
             force = 0.5*rho_f*np.pi*brad2*Cd*rel.T*np.linalg.norm(rel.T)*np.power(bporo,-1.0*Chi) + buoyancy.T
         
         ba.set_force_app(force.T)  
+
+    #to see directions
+    def plotFluidUnitVel(self):
+        norms = np.sum(np.abs(self.elements_vel)**2,axis=-1)**(1./2)
+        normsT = np.array([norms]).T
+        arr = np.concatenate((self.elements_pos, self.elements_vel/normsT), 1)
+        np.savetxt('vel.txt', arr, fmt='%1.6e', header="ITASCA VECTOR3D", comments='')
+        it.command("vector import 'vel.txt'")
+
+    #scaled by magnitude
+    def plotFluidVel(self):
+        arr = np.concatenate((self.elements_pos, self.elements_vel), 1)
+        np.savetxt('vel.txt', arr, fmt='%1.6e', header="ITASCA VECTOR3D", comments='')
+        it.command("vector import 'vel.txt'")
 
     def solve(self,nsteps):
         self.updatePorosityAndDrag()
