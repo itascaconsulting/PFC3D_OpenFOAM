@@ -34,7 +34,7 @@ class pfc_coupler(object):
         domain extent {} {} {} {} {} {}
         """.format(dmin[0], dmax[0], dmin[1], dmax[1], dmin[2], dmax[2]))
 
-    def update_weights(self):
+    def updateWeights(self):
         bandwidth = 0.15
         bpos = ba.pos()
         btree = cKDTree(bpos,5)
@@ -54,9 +54,7 @@ class pfc_coupler(object):
     def kfunc(self,d,b):
         return math.exp(-(d/b)**2)
     
-    def updatePorosityAndDrag(self):
-        self.update_weights()
-        
+    def updatePorosity(self):
         # backward interpolations
         bvol = ba.mass_real() / ba.density()
         testdv = bvol - (self.wmap.T*bvol).sum(axis=0)
@@ -66,42 +64,36 @@ class pfc_coupler(object):
         evfracV = (self.wmap.T*bvol).sum(axis=1) 
         evfrac = evfracV / self.elements_vol
         self.elements_porosity = np.ones_like(evfrac) - evfrac
-        
-        bdrag = -1.0*ba.force_app()
+
+    def updateFluidDrag(self):
+        #bdrag = -1.0*ba.force_unbal()
+        bdrag = -1.0*self.balls_drag
         self.elements_drag = (np.einsum('ik,ij',self.wmap,bdrag)).T
 
-    def updateForce(self):
-        self.update_weights()
-        
-        #forward interpolations:
-        
-        self.testcv = (self.wmap*self.elements_vol).sum(axis=0)
-        # testcv is equal to evol for each populated cell 
-        
-        #bvf is the fluid velocity for each ball
+    def updateBallsDrag(self):
         bvf   = np.einsum('ij,jk->ik',self.wmap,self.elements_vel)
         bvisc = np.einsum('ij,j...->i...'  ,self.wmap,self.elements_visc)
         bporo = np.einsum('ij,j...->i...'  ,self.wmap,self.elements_porosity)
-        
-        self.bvf = bvf
-        #ba.set_extra(1,bvf)
+        rel = bvf-ba.vel()
+        self.balls_drag = np.full(rel.shape,0.0).T
         rho_f = self.fluid_density
         brad = ba.radius()
         brad2 = ba.radius()**2
-        
-        buoyancy = np.zeros((brad2.shape[0],3))
-        buoyancy[:,2] = -4.0 / 3.0 * np.pi * brad**3 * rho_f * it.gravity_z()
-        
-        ball_vel = ba.vel()
-        rel = (bvf-ball_vel)
-        force = np.full(ba.force_app().shape,0.0).T
         if rel.sum() != 0.0 :
             Reynolds = 2.0*rho_f*brad*np.linalg.norm(rel.T)/ bvisc.T
             Cd = (0.63+4.8/np.sqrt(Reynolds))**2
             Chi = 3.7-0.65*np.exp(-(1.5-np.log10(Reynolds))**2/2.0)
-            force = 0.5*rho_f*np.pi*brad2*Cd*rel.T*np.linalg.norm(rel.T)*np.power(bporo,-1.0*Chi) + buoyancy.T
-        
-        ba.set_force_app(force.T)  
+            self.balls_drag = 0.5*rho_f*np.pi*brad2*Cd*rel.T*np.linalg.norm(rel.T)*np.power(bporo,-1.0*Chi)
+        self.balls_drag = self.balls_drag.T
+
+    def updateForce(self):
+        rho_f = self.fluid_density
+        brad = ba.radius()
+        brad2 = ba.radius()**2
+        buoyancy = np.zeros((brad2.shape[0],3))
+        buoyancy[:,2] = -4.0 / 3.0 * np.pi * brad**3 * rho_f * it.gravity_z()
+        force = self.balls_drag + buoyancy
+        ba.set_force_app(force)  
 
     #to see directions
     def plotFluidUnitVel(self):
@@ -118,17 +110,25 @@ class pfc_coupler(object):
         it.command("vector import 'vel.txt'")
 
     def solve(self,nsteps):
-        self.updatePorosityAndDrag()
+        self.balls_drag = np.full(ba.vel().shape,0.0)
         self.updateForce()
         for i in range(nsteps):
             it.command("solve age {}".format(it.mech_age()+self.dt))
-            self.updatePorosityAndDrag()
-            self.link.send_data(self.dt) # solve interval
+            
+            self.updateWeights()
+            self.updatePorosity()
+            self.updateBallsDrag()
+            self.updateFluidDrag()
+            
+            self.link.send_data(self.dt)
             self.link.send_data(self.elements_porosity)
             self.link.send_data((self.elements_drag.T/self.elements_vol).T/self.fluid_density)
+            
             self.pressure = self.link.read_data()
             self.pressure_gradient = self.link.read_data()
             self.elements_vel = self.link.read_data()
+            
+            self.updateBallsDrag()
             self.updateForce()
         self.stopSolve()
 
