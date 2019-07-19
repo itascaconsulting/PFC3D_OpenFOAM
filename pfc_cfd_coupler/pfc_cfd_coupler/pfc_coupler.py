@@ -67,8 +67,8 @@ class pfc_coupler(object):
         evfrac = evfracV / self.elements_vol
         self.elements_porosity = np.ones_like(evfrac) - evfrac
         
-        bdrag = -1.0*ba.force_unbal()
-        self.elements_drag = (np.einsum('ik,ij',self.wmap,bdrag)/self.elements_vol).T
+        bdrag = -1.0*ba.force_app()
+        self.elements_drag = (np.einsum('ik,ij',self.wmap,bdrag)).T
 
     def updateForce(self):
         self.update_weights()
