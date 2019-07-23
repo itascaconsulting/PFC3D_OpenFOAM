@@ -20,7 +20,8 @@ plot add domain
 plot add udvector
 """)
 
-coupler.dt = 0.001
+coupler.dt = 0.005
+coupler.bandwidth = 0
 coupler.solve(100)
 coupler.plotFluidUnitVel()
 coupler.close()

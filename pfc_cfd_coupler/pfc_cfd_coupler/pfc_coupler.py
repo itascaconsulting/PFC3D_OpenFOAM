@@ -23,6 +23,8 @@ class pfc_coupler(object):
         self.elements_tree = cKDTree(self.elements_pos)
         self.elements_vel = np.array([[0,0,0]]*self.nbElem)
         self.dt = 0.005
+        self.cell_size = np.linalg.norm(self.elements_pos[0]-self.elements_pos[1])
+        self.bandwidth = 1.5*self.cell_size
         
         nmin, nmax = np.amin(self.nodes,axis=0), np.amax(self.nodes,axis=0)
         diag = np.linalg.norm(nmin-nmax)
@@ -35,21 +37,25 @@ class pfc_coupler(object):
         """.format(dmin[0], dmax[0], dmin[1], dmax[1], dmin[2], dmax[2]))
 
     def updateWeights(self):
-        bandwidth = 0.15
         bpos = ba.pos()
         btree = cKDTree(bpos,5)
-        bmaps = btree.query_ball_tree(self.elements_tree,bandwidth)
-        self.wmap=np.array([[None]*self.nbElem for x in bmaps],dtype='d')
+        bmaps = btree.query_ball_tree(self.elements_tree,self.bandwidth)
+        self.wmap=np.array([[0]*self.nbElem for x in bmaps],dtype='d')
         for ib in range(bpos.shape[0]):
-          bp = bpos[ib]
-          wlist = [0]*self.nbElem
-          for ic in bmaps[ib]:
-            dv  = (vec((bp-self.elements_pos[ic]))).mag()
-            assert(dv<1)
-            wbc = self.kfunc(dv,bandwidth)
-            wlist[ic] = wbc
-          self.wmap[ib] = wlist
-        self.wmap /= self.wmap.sum(axis=1, keepdims=True)
+            bp = bpos[ib]
+            wlist = [0]*self.nbElem
+            if len(bmaps[ib]):
+                for ic in bmaps[ib]:
+                    dv  = (vec((bp-self.elements_pos[ic]))).mag()
+                    assert(dv<1)
+                    wbc = self.kfunc(dv,self.bandwidth)
+                    wlist[ic] = wbc
+                    self.wmap[ib] = wlist
+                self.wmap /= self.wmap.sum(axis=1, keepdims=True)
+            else:
+                d,iel = self.elements_tree.query(bp,k=1)
+                self.wmap[ib,iel] = 1
+
     
     def kfunc(self,d,b):
         return math.exp(-(d/b)**2)
@@ -66,7 +72,6 @@ class pfc_coupler(object):
         self.elements_porosity = np.ones_like(evfrac) - evfrac
 
     def updateFluidDrag(self):
-        #bdrag = -1.0*ba.force_unbal()
         bdrag = -1.0*self.balls_drag
         self.elements_drag = (np.einsum('ik,ij',self.wmap,bdrag)).T
 
