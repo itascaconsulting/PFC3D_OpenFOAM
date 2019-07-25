@@ -10,10 +10,15 @@ set gravity 0 0 -9.81
 def fluid_time
   global fluid_time = mech.age
 end
-ball history id 1 zvelocity id 1
-history add id 2 fish @fluid_time
+def appforce
+    global appforce = ball.force.app.z(ball.find(1))
+end
+history add id 1 fish @fluid_time
+ball history id 2 zvelocity id 1
+ball history id 3 zunbalforce id 1
+history add id 4 fish @appforce
 plot clear
-plot add hist 1 vs 2
+plot add hist 2 vs 1
 plot add ball shape arrow
 plot add axes
 plot add domain
@@ -21,9 +26,10 @@ plot add udvector
 """)
 
 coupler.dt = 0.005
-coupler.bandwidth = 0
+coupler.bandwidth = 0.3
 coupler.solve(100)
 coupler.plotFluidUnitVel()
 coupler.close()
 
 print "ball z velocity", it.ball.find(1).vel_z()
+it.command("history write 1,2,3,4 file 'droptest2.txt' truncate")
