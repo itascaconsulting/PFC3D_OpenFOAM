@@ -93,10 +93,8 @@ class pfc_coupler(object):
 
     def updateForce(self):
         rho_f = self.fluid_density
-        brad = ba.radius()
-        brad2 = ba.radius()**2
-        buoyancy = np.zeros((brad2.shape[0],3))
-        buoyancy[:,2] = -4.0 / 3.0 * np.pi * brad**3 * rho_f * it.gravity_z()
+        brad = np.array([ba.radius()]*3).T
+        buoyancy = -4.0 / 3.0 * np.pi * brad**3 * rho_f * it.gravity()
         force = self.balls_drag + buoyancy
         ba.set_force_app(force)  
 
