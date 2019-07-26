@@ -3,8 +3,6 @@ from pfc_cfd_coupler.pfc_coupler import pfc_coupler
 
 coupler = pfc_coupler()
 it.command("""
-cfd porosity poly
-cfd buoy on
 ball generate rad 0.005 number 100 box 0 1 0 0.25 0 1
 ball ini dens 2500
 ball prop kn 1e2 ks 1e2 fric 0.25
@@ -25,10 +23,12 @@ history add id 1 fish @ball_height
 history add id 2 fish @fluid_time
 plot clear
 plot add hist 1 vs 2
-plot add cfdelement shape arrow colorby vectorattribute "velocity"
+plot add ball
+plot add udvector
 """)
 
 coupler.dt = 0.005
+coupler.bandwidth = 0
 coupler.solve(200)
-
-#print "ball y velocity", it.ball.find(1).vel_y()
+coupler.plotFluidUnitVel()
+coupler.close()
