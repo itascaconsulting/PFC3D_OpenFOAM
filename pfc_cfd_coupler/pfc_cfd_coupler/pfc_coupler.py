@@ -24,7 +24,7 @@ class pfc_coupler(object):
         self.elements_vel = np.array([[0,0,0]]*self.nbElem)
         self.dt = 0.005
         self.cell_size = np.linalg.norm(self.elements_pos[0]-self.elements_pos[1])
-        self.bandwidth = 1.5*self.cell_size
+        self.bandwidth = 2*self.cell_size
         
         nmin, nmax = np.amin(self.nodes,axis=0), np.amax(self.nodes,axis=0)
         diag = np.linalg.norm(nmin-nmax)
@@ -50,8 +50,7 @@ class pfc_coupler(object):
                     assert(dv<1)
                     wbc = self.kfunc(dv,self.bandwidth)
                     wlist[ic] = wbc
-                self.wmap[ib] = wlist
-                self.wmap[ib] /= self.wmap[ib].sum()
+                self.wmap[ib] = wlist / wlist.sum()
             else:
                 d,iel = self.elements_tree.query(bp,k=1)
                 self.wmap[ib,iel] = 1.0
@@ -85,10 +84,10 @@ class pfc_coupler(object):
         brad = ba.radius()
         brad2 = ba.radius()**2
         if rel.sum() != 0.0 :
-            Reynolds = 2.0*rho_f*brad*np.linalg.norm(rel.T)/ bvisc.T
+            Reynolds = 2.0*rho_f*brad*np.linalg.norm(rel,axis=1)/ bvisc.T
             Cd = (0.63+4.8/np.sqrt(Reynolds))**2
             Chi = 3.7-0.65*np.exp(-(1.5-np.log10(Reynolds))**2/2.0)
-            self.balls_drag = 0.5*rho_f*np.pi*brad2*Cd*rel.T*np.linalg.norm(rel.T)*np.power(bporo,-1.0*Chi)
+            self.balls_drag = 0.5*rho_f*np.pi*brad2*Cd*rel.T*np.linalg.norm(rel,axis=1)*np.power(bporo,-1.0*Chi)
         self.balls_drag = self.balls_drag.T
 
     def updateForce(self):
