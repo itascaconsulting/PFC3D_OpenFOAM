@@ -34,14 +34,14 @@ cfd buoy on
 ball create rad 0.005 x 0.5 y 0.5 z 0.5
 ball ini dens 2500
 ball prop kn 1e2 ks 1e2 fric 0.25
-set gravity 0 0 -9.81
+set gravity 0 -9.81 0
 def fluid_time
   global fluid_time = mech.age
 end
 history add id 1 fish @fluid_time
-ball history id 2 zvelocity id 1
-ball history id 3 zunbalforce id 1
-ball cfd history id 4 zforce id 1
+ball history id 2 yvelocity id 1
+ball history id 3 yunbalforce id 1
+ball cfd history id 4 yforce id 1
 plot clear
 plot add hist 2 vs 1
 plot add cfdelement shape arrow colorby vectorattribute "velocity"
@@ -63,5 +63,5 @@ cfd_link.send_data(0.0) # solve interval
 cfd_link.close()
 del cfd_link
 
-print "ball z velocity", it.ball.find(1).vel_z()
+print "ball y velocity", it.ball.find(1).vel_y()
 it.command("history write 1,2,3,4 file 'droptest1.txt' truncate")
