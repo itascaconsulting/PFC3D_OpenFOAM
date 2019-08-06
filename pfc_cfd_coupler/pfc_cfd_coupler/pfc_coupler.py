@@ -50,11 +50,11 @@ class pfc_coupler(object):
                     assert(dv<1)
                     wbc = self.kfunc(dv,self.bandwidth)
                     wlist[ic] = wbc
-                    self.wmap[ib] = wlist
-                self.wmap /= self.wmap.sum(axis=1, keepdims=True)
+                self.wmap[ib] = wlist
+                self.wmap[ib] /= self.wmap[ib].sum()
             else:
                 d,iel = self.elements_tree.query(bp,k=1)
-                self.wmap[ib,iel] = 1
+                self.wmap[ib,iel] = 1.0
 
     
     def kfunc(self,d,b):
