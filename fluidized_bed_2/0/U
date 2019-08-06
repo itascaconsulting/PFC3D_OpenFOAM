@@ -20,27 +20,15 @@ internalField   uniform (0 0 0);
 
 boundaryField
 {
-  inletWalls
-  {
-	//type            zeroGradient;
-
-        //type            fixedValue;
-        //value           uniform (0 0.05 0);
-
-	type uniformFixedValue;
-	uniformValue polynomial
-	(
-	  ((0 0 0) (0 0 0))
-	  ((0 1 0) (0 1 0))
-	);
-  }
-  outletWalls
+  topWall
   {
     type            zeroGradient;
   }
+
   fixedWalls
   {
-    type            slip;
+    type            fixedValue;
+    value           uniform (0 0 0);
   }
 }
 

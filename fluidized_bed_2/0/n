@@ -20,14 +20,11 @@ internalField   uniform 1.0;
 
 boundaryField
 {
-    inletWalls
+    topWall
     {
         type            zeroGradient;
     }
-    outletWalls
-    {
-      type              zeroGradient;
-    }
+
     fixedWalls
     {
         type            zeroGradient;
