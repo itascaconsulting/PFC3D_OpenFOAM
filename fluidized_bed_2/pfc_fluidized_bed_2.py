@@ -3,20 +3,24 @@ from pfc_cfd_coupler.pfc_coupler import pfc_coupler
 
 coupler = pfc_coupler()
 it.command("""
-ball create rad 0.005 x 0.5 y 0.5 z 0.5
+ball generate rad 0.005 number 100 box 0 1 0 0.01 0 1
 ball ini dens 2500
 ball prop kn 1e2 ks 1e2 fric 0.25
 set gravity 0 -9.81 0
+def ball_height
+  local max = 0
+  loop foreach local b ball.list
+    if ball.pos.y(b) > max then
+      max = ball.pos.y(b)
+    endif
+  endloop
+  ball_height = max
+end
 def fluid_time
   global fluid_time = mech.age
 end
-def appforce
-    global appforce = ball.force.app.y(ball.find(1))
-end
 history add id 1 fish @fluid_time
-ball history id 2 yvelocity id 1
-ball history id 3 yunbalforce id 1
-history add id 4 fish @appforce
+history add id 2 fish @ball_height
 plot clear
 plot add hist 2 vs 1
 plot add ball shape arrow
@@ -31,5 +35,4 @@ coupler.solve(100)
 coupler.plotFluidUnitVel()
 coupler.close()
 
-print "ball y velocity", it.ball.find(1).vel_y()
-it.command("history write 1,2,3,4 file 'droptest2.txt' truncate")
+it.command("history write 1,2 file 'fluidized_bed_2.txt' truncate")

@@ -11,11 +11,9 @@ nodes = cfd_link.read_data()
 elements = cfd_link.read_data()
 fluid_density = cfd_link.read_data()
 fluid_viscosity = cfd_link.read_data()
-print fluid_density, fluid_viscosity
 nmin, nmax = np.amin(nodes,axis=0), np.amax(nodes,axis=0)
 diag = np.linalg.norm(nmin-nmax)
 dmin, dmax = nmin -0.1*diag, nmax+0.1*diag
-print dmin, dmax
 
 it.command("""
 new
@@ -31,19 +29,27 @@ element cfd ini density {}
 element cfd ini visc {}
 ;cfd porosity poly
 cfd buoy on
-ball create rad 0.005 x 0.5 y 0.5 z 0.5
+ball generate rad 0.005 number 100 box 0 1 0 0.01 0 1
 ball ini dens 2500
 ball prop kn 1e2 ks 1e2 fric 0.25
 set gravity 0 -9.81 0
+def ball_height
+  local max = 0
+  loop foreach local b ball.list
+    if ball.pos.y(b) > max then
+      max = ball.pos.y(b)
+    endif
+  endloop
+  ball_height = max
+end
 def fluid_time
   global fluid_time = mech.age
 end
 history add id 1 fish @fluid_time
-ball history id 2 yvelocity id 1
-ball history id 3 yunbalforce id 1
-ball cfd history id 4 yforce id 1
+history add id 2 fish @ball_height
 plot clear
 plot add hist 2 vs 1
+plot add ball shape arrow
 plot add cfdelement shape arrow colorby vectorattribute "velocity"
 """.format(fluid_density, fluid_viscosity))
 
@@ -63,5 +69,4 @@ cfd_link.send_data(0.0) # solve interval
 cfd_link.close()
 del cfd_link
 
-print "ball y velocity", it.ball.find(1).vel_y()
-it.command("history write 1,2,3,4 file 'droptest1.txt' truncate")
+it.command("history write 1,2 file 'fluidized_bed_1.txt' truncate")
