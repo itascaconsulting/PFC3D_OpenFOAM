@@ -3,7 +3,7 @@ from pfc_cfd_coupler.pfc_coupler import pfc_coupler
 
 coupler = pfc_coupler()
 it.command("""
-ball generate rad 0.005 number 100 box 0 1 0 0.01 0 1
+ball generate rad 0.00075 number 100 box 0 0.04 0 0.005 0 0.0075
 ball ini dens 2500
 ball prop kn 1e2 ks 1e2 fric 0.25
 set gravity 0 -9.81 0
@@ -29,10 +29,10 @@ plot add domain
 plot add udvector
 """)
 
-coupler.dt = 0.005
-coupler.bandwidth = 0
+coupler.dt = 0.0001
+#coupler.bandwidth = 0
 coupler.solve(100)
-coupler.plotFluidUnitVel()
+coupler.plotFluidVel()
 coupler.close()
 
 it.command("history write 1,2 file 'fluidized_bed_2.txt' truncate")

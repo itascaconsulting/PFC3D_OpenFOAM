@@ -29,7 +29,7 @@ element cfd ini density {}
 element cfd ini visc {}
 ;cfd porosity poly
 cfd buoy on
-ball generate rad 0.005 number 100 box 0 1 0 0.01 0 1
+ball generate rad 0.00075 number 100 box 0 0.04 0 0.005 0 0.0075
 ball ini dens 2500
 ball prop kn 1e2 ks 1e2 fric 0.25
 set gravity 0 -9.81 0
@@ -56,7 +56,7 @@ plot add cfdelement shape arrow colorby vectorattribute "velocity"
 element_volume = ca.volume()
 dt = 0.005
 
-for i in range(100):
+for i in range(2):
     it.command("solve age {}".format(it.mech_age()+dt))
     cfd_link.send_data(dt) # solve interval
     cfd_link.send_data(ca.porosity())
