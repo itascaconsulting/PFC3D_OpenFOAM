@@ -4,8 +4,9 @@ from pfc_cfd_coupler.pfc_coupler import pfc_coupler
 coupler = pfc_coupler()
 it.command("""
 ball generate rad 0.00075 number 100 box 0 0.04 0 0.005 0 0.0075
-ball ini dens 2500
-ball prop kn 1e2 ks 1e2 fric 0.25
+wall generate box 0 0.04 0 0.2 0 0.0075
+ball ini dens 2000
+cmat default model linear property kn 5000 ks 5000 fric 0.15 dp_nratio 0.1
 set gravity 0 -9.81 0
 def ball_height
   local max = 0
@@ -23,13 +24,13 @@ history add id 1 fish @fluid_time
 history add id 2 fish @ball_height
 plot clear
 plot add hist 2 vs 1
-plot add ball shape arrow
+plot add ball ;shape arrow
 plot add axes
 plot add domain
 plot add udvector
 """)
 
-coupler.dt = 0.0001
+coupler.dt = 0.001
 #coupler.bandwidth = 0
 coupler.solve(100)
 coupler.plotFluidVel()

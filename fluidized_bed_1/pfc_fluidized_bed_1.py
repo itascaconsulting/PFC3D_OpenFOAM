@@ -27,11 +27,12 @@ config cfd
 set timestep max 1e-5
 element cfd ini density {}
 element cfd ini visc {}
-;cfd porosity poly
+cfd porosity poly
 cfd buoy on
 ball generate rad 0.00075 number 100 box 0 0.04 0 0.005 0 0.0075
-ball ini dens 2500
-ball prop kn 1e2 ks 1e2 fric 0.25
+wall generate box 0 0.04 0 0.2 0 0.0075
+ball ini dens 2000
+cmat default model linear property kn 5000 ks 5000 fric 0.15 dp_nratio 0.1
 set gravity 0 -9.81 0
 def ball_height
   local max = 0
@@ -51,12 +52,13 @@ plot clear
 plot add hist 2 vs 1
 plot add ball shape arrow
 plot add cfdelement shape arrow colorby vectorattribute "velocity"
+plot add wall
 """.format(fluid_density, fluid_viscosity))
 
 element_volume = ca.volume()
-dt = 0.005
+dt = 0.001
 
-for i in range(2):
+for i in range(100):
     it.command("solve age {}".format(it.mech_age()+dt))
     cfd_link.send_data(dt) # solve interval
     cfd_link.send_data(ca.porosity())
