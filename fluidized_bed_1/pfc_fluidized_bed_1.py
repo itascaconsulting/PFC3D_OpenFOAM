@@ -17,19 +17,11 @@ dmin, dmax = nmin -0.1*diag, nmax+0.1*diag
 
 it.command("""
 new
+set deterministic on
+set random 1
 domain extent {} {} {} {} {} {}
-""".format(dmin[0], dmax[0],
-           dmin[1], dmax[1],
-           dmin[2], dmax[2]))
-ca.create_mesh(nodes, elements)
-it.command("""
-config cfd
-set timestep max 1e-5
-element cfd ini density {}
-element cfd ini visc {}
-cfd porosity poly
-cfd buoy on
-ball generate rad 0.00075 number 100 box 0 0.04 0 0.005 0 0.0075
+set timestep max 1e-4
+ball generate rad 0.00075 number 2160 box 0 0.04 0 0.06 0 0.0075
 wall generate box 0 0.04 0 0.2 0 0.0075
 ball ini dens 2000
 cmat default model linear property kn 5000 ks 5000 fric 0.15 dp_nratio 0.1
@@ -43,32 +35,49 @@ def ball_height
   endloop
   ball_height = max
 end
+define pressure_drop
+    pressure_drop = cfd_pressure_drop 
+end
 def fluid_time
   global fluid_time = mech.age
 end
 history add id 1 fish @fluid_time
 history add id 2 fish @ball_height
 plot clear
-plot add hist 2 vs 1
-plot add ball shape arrow
+plot add ball
+plot add wall transparency 70
+cy 20000
+ball ini damp 0.7
+cy 20000
+""".format(dmin[0], dmax[0],
+           dmin[1], dmax[1],
+           dmin[2], dmax[2]))
+ca.create_mesh(nodes, elements)
+it.command("""
+config cfd
+element cfd ini density {}
+element cfd ini visc {}
+cfd porosity poly
 plot add cfdelement shape arrow colorby vectorattribute "velocity"
-plot add wall
+history add id 3 fish @pressure_drop
+plot add hist 3 vs 1
 """.format(fluid_density, fluid_viscosity))
 
 element_volume = ca.volume()
-dt = 0.001
+dt = 0.0001
 
 for i in range(100):
-    it.command("solve age {}".format(it.mech_age()+dt))
+    it.command("solve time {}".format(dt))
     cfd_link.send_data(dt) # solve interval
     cfd_link.send_data(ca.porosity())
     cfd_link.send_data((ca.drag().T/element_volume).T/fluid_density)
     ca.set_pressure(cfd_link.read_data())
     ca.set_pressure_gradient(cfd_link.read_data())
     ca.set_velocity(cfd_link.read_data())
+    it.fish.set("cfd_pressure_drop",(ca.pressure()[0] - ca.pressure()[1875]))
 
 cfd_link.send_data(0.0) # solve interval
 cfd_link.close()
 del cfd_link
 
-it.command("history write 1,2 file 'fluidized_bed_1.txt' truncate")
+it.command("history write 1,2,3 file 'fluidized_bed_1.txt' truncate")

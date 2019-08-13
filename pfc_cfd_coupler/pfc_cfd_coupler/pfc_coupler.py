@@ -22,6 +22,8 @@ class pfc_coupler(object):
         self.elements_visc = np.array([self.fluid_viscosity]*self.nbElem)
         self.elements_tree = cKDTree(self.elements_pos)
         self.elements_vel = np.array([[0,0,0]]*self.nbElem)
+        self.pressure = np.array([0]*self.nbElem)
+        self.updatePressureDrop()
         self.dt = 0.005
         self.cell_size = np.linalg.norm(self.elements_pos[0]-self.elements_pos[1])
         self.bandwidth = 2*self.cell_size
@@ -32,9 +34,11 @@ class pfc_coupler(object):
         
         it.command("""
         new
-        set timestep max 1e-5
         domain extent {} {} {} {} {} {}
         """.format(dmin[0], dmax[0], dmin[1], dmax[1], dmin[2], dmax[2]))
+
+    def updatePressureDrop(self):
+        it.fish.set("cfd_pressure_drop",(self.pressure[0] - self.pressure[1875]))
 
     def updateWeights(self):
         bpos = ba.pos()
@@ -116,7 +120,7 @@ class pfc_coupler(object):
         self.balls_drag = np.full(ba.vel().shape,0.0)
         self.updateForce()
         for i in range(nsteps):
-            it.command("solve age {}".format(it.mech_age()+self.dt))
+            it.command("solve time {}".format(self.dt))
             
             self.updateWeights()
             self.updatePorosity()
@@ -131,6 +135,7 @@ class pfc_coupler(object):
             self.pressure_gradient = self.link.read_data()
             self.elements_vel = self.link.read_data()
             
+            self.updatePressureDrop()
             self.updateBallsDrag()
             self.updateForce()
         self.stopSolve()
