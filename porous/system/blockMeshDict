@@ -10,43 +10,67 @@ FoamFile
     version     2.0;
     format      ascii;
     class       dictionary;
-    location    "system";
-    object      controlDict;
+    object      blockMeshDict;
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-//application     icoFoam;
+convertToMeters 0.05;
 
-startFrom       startTime;
+vertices
+(
+    (.5 -1 -.5)
+    (.5 1 -.5)
+    (-.5 1 -.5)
+    (-.5 -1 -.5)
+    (.5 -1 .5)
+    (.5 1 .5)
+    (-.5 1 .5)
+    (-.5 -1 .5)
+);
 
-startTime       0;
+blocks
+(
+    hex (0 1 2 3 4 5 6 7) (10 5 5) simpleGrading (1 1 1)
+);
 
-stopAt          endTime;
+edges
+(
+);
 
-endTime         0.01;
+boundary
+(
+    inletWalls
+    {
+        type wall;
+        faces
+        (
+          (0 4 7 3)
 
-deltaT          0.005;
+        );
+    }
+    outletWalls
+    {
+        type wall;
+        faces
+        (
+            (2 6 5 1)
+        );
+    }
+    fixedWalls
+    {
+        type wall;
+        faces
+        (
+            (3 7 6 2)
+            (1 5 4 0)
+            (0 3 2 1)
+            (4 5 6 7)
+        );
+    }
+);
 
-writeControl    runTime;
-
-writeInterval   1;
-
-purgeWrite      0;
-
-writeFormat     ascii;
-
-writePrecision  6;
-
-writeCompression off;
-
-timeFormat      general;
-
-timePrecision   6;
-
-runTimeModifiable true;
-
-maxCo             0.5;
-adjustTimeStep    yes;
-maxDeltaT         1;
+mergePatchPairs
+(
+);
 
 // ************************************************************************* //

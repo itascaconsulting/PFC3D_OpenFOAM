@@ -17,11 +17,11 @@ plot add geometry contour
 """)
 
 coupler.max_dt = 0.001
-coupler.bandwidth = 0
+coupler.bandwidth = 0.016
 coupler.pressureMeasureCell1 = 12
 coupler.pressureMeasureCell2 = 1887
 coupler.smallest_size = 0.0016
-coupler.solve(0.0001)
+coupler.solve(0.2)
 coupler.plotFluidVel()
 coupler.plotPorosity()
 coupler.stopSolve()

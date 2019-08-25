@@ -9,34 +9,64 @@ FoamFile
 {
   version     2.0;
   format      ascii;
-  class       volVectorField;
-  object      U;
+  class       dictionary;
+  location    "system";
+  object      fvSolution;
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-dimensions      [0 1 -1 0 0 0 0];
-
-internalField   uniform (0 0 0);
-
-boundaryField
+solvers
 {
-  inletWalls
+  p
   {
-	type	uniformFixedValue;
-	uniformValue	table	((0 (0 0 0)) (0.1 (0 1.5 0)) (0.2 (0 0 0)));
+    solver          PCG;
+    preconditioner  DIC;
+    tolerance       1e-06;
+    relTol          0;
   }
 
-  outletWalls
+  U
   {
-	type	zeroGradient; 
-  }
-
-  fixedWalls
-  {
-	//type	fixedValue;
-	//value	uniform (0 0 0);
-	type slip;
+    solver          smoothSolver;
+    smoother        symGaussSeidel;
+    tolerance       1e-05;
+    relTol          0;
   }
 }
+
+PISO
+{
+  nCorrectors     2;
+  nNonOrthogonalCorrectors 0;
+  pRefCell        0;
+  pRefValue       0;
+}
+
+SIMPLE
+{
+
+  nNonOrthogonalCorrectors 0;
+  pRefCell        0;
+  pRefValue       0;
+
+  residualControl
+  {
+    p               1e-5;
+    U               1e-5;
+  }
+}
+
+relaxationFactors
+{
+  fields
+  {
+    p               0.3;
+  }
+  equations
+  {
+    U               0.7;
+  }
+}
+
 
 // ************************************************************************* //

@@ -22,20 +22,17 @@ boundaryField
 {
   inletWalls
   {
-	type	uniformFixedValue;
-	uniformValue	table	((0 (0 0 0)) (0.1 (0 1.5 0)) (0.2 (0 0 0)));
+	type	zeroGradient;	
   }
 
   outletWalls
   {
-	type	zeroGradient; 
+    type	zeroGradient; 
   }
 
   fixedWalls
   {
-	//type	fixedValue;
-	//value	uniform (0 0 0);
-	type slip;
+	type	slip;
   }
 }
 

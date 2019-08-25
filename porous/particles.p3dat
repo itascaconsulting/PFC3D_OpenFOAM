@@ -1,0 +1,25 @@
+set deterministic on
+set random 1
+set fish autocreate off
+
+cmat default model linear property kn 1e1 dp_nratio 0.2
+
+def inline
+  local dim = 2.5e-2
+  local radius = dim / 5 / 4
+  global xdim = dim - radius
+  global ydim = 2 * dim - radius
+end
+@inline
+
+ball generate cubic box [-1*xdim] @xdim [-1*ydim] @ydim  [-1*xdim] @xdim rad [5e-2/5/2/4]
+
+ball attr dens 2600
+ball fix x y z
+
+plot clear
+plot add ball
+plot add axes
+plot add udvector
+plot add wall transparency 70
+plot add geometry contour
