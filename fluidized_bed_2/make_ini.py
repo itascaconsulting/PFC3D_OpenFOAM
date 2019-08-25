@@ -28,11 +28,6 @@ def fluid_time
 end
 history add id 1 fish @fluid_time
 history add id 2 fish @ball_height
-plot clear
-plot add ball
-plot add axes
-plot add udvector
-plot add wall transparency 70
 cy 20000
 ball ini damp 0.7
 cy 20000

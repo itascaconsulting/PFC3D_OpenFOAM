@@ -67,7 +67,11 @@ class pfc_coupler(object):
 
     
     def kfunc(self,d,b):
-        return math.exp(-(d/b)**2)
+        x = d/b
+        if x<1:
+            return (1-x**2)**4
+        else:
+            return 0
     
     def updatePorosity(self):
         # backward interpolations
@@ -120,6 +124,23 @@ class pfc_coupler(object):
         arr = np.concatenate((self.elements_pos, self.elements_vel), 1)
         np.savetxt('vel.txt', arr, fmt='%1.6e', header="ITASCA VECTOR3D", comments='')
         it.command("vector import 'vel.txt'")
+
+    def plotPorosity(self):
+        f = open("elements.geom","w")
+        f.write("ITASCA GEOMETRY3D\nNODES\n")
+        for i in range(1,self.nbElem+1):
+            f.write(str(i))
+            f.write(' ')
+            for j in self.elements_pos[i-1]:
+                f.write(str(j))
+                f.write(' ')
+            f.write('EXTRA 1 ')
+            f.write(str(self.elements_porosity[i-1]))
+            f.write(' EXTRA 2 ')
+            f.write(str(np.linalg.norm(self.elements_drag[i-1])))
+            f.write('\n')
+        f.close()
+        it.command("geometry import 'elements.geom'")
 
     def updateTimeStep(self):
         self.dt = 100.0
