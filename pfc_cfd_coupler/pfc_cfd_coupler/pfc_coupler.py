@@ -26,8 +26,11 @@ class pfc_coupler(object):
         self.pressureMeasureCell1 = 0
         self.pressureMeasureCell2 = 1
         self.updatePressureDrop()
-        self.dt = 0.005
+        self.max_dt = 0.005
+        self.dt = self.max_dt
+        self.time = 0.0
         self.cell_size = np.linalg.norm(self.elements_pos[0]-self.elements_pos[1])
+        self.smallest_size = 1.0
         self.bandwidth = 2*self.cell_size
         
         nmin, nmax = np.amin(self.nodes,axis=0), np.amax(self.nodes,axis=0)
@@ -118,10 +121,20 @@ class pfc_coupler(object):
         np.savetxt('vel.txt', arr, fmt='%1.6e', header="ITASCA VECTOR3D", comments='')
         it.command("vector import 'vel.txt'")
 
-    def solve(self,nsteps):
+    def updateTimeStep(self):
+        self.dt = 100.0
+        if (self.elements_vel.max()>1.0e-7):
+            self.dt = float(0.5*self.smallest_size/self.elements_vel.max())
+        if (self.max_dt < self.dt):
+            self.dt = self.max_dt
+
+    def solve(self,total_time):
+        self.time = 0.0
         self.balls_drag = np.full(ba.vel().shape,0.0)
         self.updateForce()
-        for i in range(nsteps):
+        while self.time < total_time:
+            self.updateTimeStep()
+            
             it.command("solve time {}".format(self.dt))
             
             self.updateWeights()
@@ -140,6 +153,8 @@ class pfc_coupler(object):
             self.updatePressureDrop()
             self.updateBallsDrag()
             self.updateForce()
+            
+            self.time += self.dt
 
     def stopSolve(self):
         self.link.send_data(0.0)

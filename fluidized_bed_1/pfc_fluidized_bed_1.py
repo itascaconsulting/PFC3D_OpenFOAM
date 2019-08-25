@@ -35,9 +35,17 @@ plot add cfdelement shape arrow colorby vectorattribute "velocity"
 """.format(fluid_density, fluid_viscosity))
 
 element_volume = ca.volume()
-dt = 0.0001
+max_dt = 0.0001
+smallest_size = 0.0016
+time = 0.0
+total_time = 0.02
 
-for i in range(200):
+while time < total_time:
+    dt = 100.0
+    if (ca.velocity().max()>1.0e-7):
+        dt = float(0.5*smallest_size/ca.velocity().max())
+    if (max_dt < dt):
+        dt = max_dt
     it.command("solve time {}".format(dt))
     cfd_link.send_data(dt) # solve interval
     cfd_link.send_data(ca.porosity())
@@ -46,6 +54,7 @@ for i in range(200):
     ca.set_pressure_gradient(cfd_link.read_data())
     ca.set_velocity(cfd_link.read_data())
     it.fish.set("cfd_pressure_drop",(ca.pressure()[12] - ca.pressure()[1887]))
+    time += dt
 
 cfd_link.send_data(0.0) # solve interval
 cfd_link.close()
