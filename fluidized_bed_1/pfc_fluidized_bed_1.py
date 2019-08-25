@@ -13,7 +13,7 @@ fluid_density = cfd_link.read_data()
 fluid_viscosity = cfd_link.read_data()
 
 it.command("""
-restore ini.sav
+restore ../fluidized_bed_1/ini.sav
 set timestep max 1e-4
 set mechanical age 0.0
 """)
@@ -37,7 +37,7 @@ plot add cfdelement shape arrow colorby vectorattribute "velocity"
 element_volume = ca.volume()
 dt = 0.0001
 
-for i in range(1000):
+for i in range(200):
     it.command("solve time {}".format(dt))
     cfd_link.send_data(dt) # solve interval
     cfd_link.send_data(ca.porosity())
@@ -45,7 +45,7 @@ for i in range(1000):
     ca.set_pressure(cfd_link.read_data())
     ca.set_pressure_gradient(cfd_link.read_data())
     ca.set_velocity(cfd_link.read_data())
-    it.fish.set("cfd_pressure_drop",(ca.pressure()[0] - ca.pressure()[1875]))
+    it.fish.set("cfd_pressure_drop",(ca.pressure()[12] - ca.pressure()[1887]))
 
 cfd_link.send_data(0.0) # solve interval
 cfd_link.close()

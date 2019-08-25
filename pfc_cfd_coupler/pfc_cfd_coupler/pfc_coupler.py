@@ -23,6 +23,8 @@ class pfc_coupler(object):
         self.elements_tree = cKDTree(self.elements_pos)
         self.elements_vel = np.array([[0,0,0]]*self.nbElem)
         self.pressure = np.array([0]*self.nbElem)
+        self.pressureMeasureCell1 = 0
+        self.pressureMeasureCell2 = 1
         self.updatePressureDrop()
         self.dt = 0.005
         self.cell_size = np.linalg.norm(self.elements_pos[0]-self.elements_pos[1])
@@ -38,7 +40,7 @@ class pfc_coupler(object):
         """.format(dmin[0], dmax[0], dmin[1], dmax[1], dmin[2], dmax[2]))
 
     def updatePressureDrop(self):
-        it.fish.set("cfd_pressure_drop",(self.pressure[0] - self.pressure[1875]))
+        it.fish.set("cfd_pressure_drop",(self.pressure[self.pressureMeasureCell1] - self.pressure[self.pressureMeasureCell2]))
 
     def updateWeights(self):
         bpos = ba.pos()
@@ -138,7 +140,6 @@ class pfc_coupler(object):
             self.updatePressureDrop()
             self.updateBallsDrag()
             self.updateForce()
-        self.stopSolve()
 
     def stopSolve(self):
         self.link.send_data(0.0)
