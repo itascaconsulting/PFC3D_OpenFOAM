@@ -80,11 +80,31 @@ class pfc_coupler(object):
     def kfunc(self,d,b,a):
         x = d/b
         s = self.smallest_size
+        pow1 = self.pow1
+        pow2 = self.pow2
+        pow3 = self.pow3
         if x<1:
-            c = np.min(a)
-            if c<s:
-                return (1-x**2)**(-4/s*c+7.)
-            return (1-x**2)**4
+            if   a[0]>=s and a[1]>=s and a[2]>=s:
+                return (1-x**2)**4
+            elif a[0]<s  and a[1]>=s and a[2]>=s:
+                return (1-x**2)**(-4./s*a[0]+pow1)
+            elif a[0]>=s and a[1]<s  and a[2]>=s:
+                return (1-x**2)**(-4./s*a[1]+pow1)
+            elif a[0]>=s and a[1]>=s and a[2]<s:
+                return (1-x**2)**(-4./s*a[2]+pow1)
+            elif a[0]<s  and a[1]<s  and a[2]>=s:
+                p = -4./s*a[0]+pow2
+                return (1-x**2)**(-p/s*a[1]+pow2)
+            elif a[0]<s  and a[1]>=s and a[2]<s:
+                p = -4./s*a[2]+pow2
+                return (1-x**2)**(-p/s*a[0]+pow2)
+            elif a[0]>=s and a[1]<s  and a[2]<s:
+                p = -4./s*a[1]+pow2
+                return (1-x**2)**(-p/s*a[2]+pow2)
+            else:
+                p = -4./s*a[0]+pow3
+                q = -p /s*a[1]+pow3
+                return (1-x**2)**(-q/s*a[2]+pow3)
         else:
             return 0
     
