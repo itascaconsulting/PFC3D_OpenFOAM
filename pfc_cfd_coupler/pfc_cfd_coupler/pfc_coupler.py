@@ -79,7 +79,7 @@ class pfc_coupler(object):
     
     def kfunc(self,d,b,a):
         x = d/b
-        s = 0.005
+        s = self.smallest_size
         if x<1:
             c = np.min(a)
             if c<s:

@@ -1,0 +1,25 @@
+new
+set fish autocreate off
+
+def model_solution
+  local rhof = 998.23
+  local rhop = 2465
+  local mu = 1.004e-3
+  local g = 9.81
+  local gprime = (rhop - rhof) * g
+  local radius = 3.013843e-4
+  local volume = 4 / 3 * math.pi * radius ^ 3
+  local v = 0.04
+  local re = 2 * rhof * radius * v / mu
+  local oo=io.out(string.build("Particle Reynolds number %1", re))
+  local cd = (0.63 + 4.8/math.sqrt(re))^2
+  local f0 = 0.5 * cd * rhof * math.pi * radius^2 * v^2
+  local chi = 3.7 - 0.65 * math.exp(-(1.5 - math.log(re))^2 / 2.0)
+  local epsilon = (volume * gprime / f0) ^ (-1/chi)
+  oo = io.out(string.build("steady porosity %1", epsilon))
+  local np = 3375
+  local l = 9.5174e-3
+  local h = np * volume / (1 - epsilon) / l^2
+  oo = io.out(string.build("steady height %1", h))
+end
+@model_solution
