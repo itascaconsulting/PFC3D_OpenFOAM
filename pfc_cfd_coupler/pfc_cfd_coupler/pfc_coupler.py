@@ -29,13 +29,17 @@ class pfc_coupler(object):
         self.max_dt = 0.005
         self.dt = self.max_dt
         self.time = 0.0
-        self.cell_size = np.linalg.norm(self.elements_pos[0]-self.elements_pos[1])
-        self.smallest_size = 1.0
-        self.bandwidth = 2*self.cell_size
         
         nmin, nmax = np.amin(self.nodes,axis=0), np.amax(self.nodes,axis=0)
         diag = np.linalg.norm(nmin-nmax)
         dmin, dmax = nmin-0.1*diag, nmax+0.1*diag
+        self.corner1 = nmin
+        self.corner2 = nmax
+        self.grid_sizes = np.array([20,10,10])
+        self.cell_sizes = (self.corner2-self.corner1)/self.grid_sizes
+        self.cell_size = np.linalg.norm(self.cell_sizes)
+        self.smallest_size = 1.0
+        self.bandwidth = 2*self.cell_size
         
         it.command("""
         new
@@ -47,28 +51,39 @@ class pfc_coupler(object):
 
     def updateWeights(self):
         bpos = ba.pos()
+        nb = bpos.shape[0]
+        nmin = np.array([self.corner1]*nb)
+        nmax = np.array([self.corner2]*nb)
+        dmin = np.concatenate((bpos-nmin,nmax-bpos),1)
+        dminx = dmin[:,0:6:3]
+        dminy = dmin[:,1:6:3]
+        dminz = dmin[:,2:6:3]
+        self.d = np.vstack((dminx.min(axis=1),dminy.min(axis=1),dminz.min(axis=1))).T
         btree = cKDTree(bpos,5)
         bmaps = btree.query_ball_tree(self.elements_tree,self.bandwidth)
         self.wmap=np.array([[0]*self.nbElem for x in bmaps],dtype='d')
-        for ib in range(bpos.shape[0]):
+        for ib in range(nb):
             bp = bpos[ib]
             wlist = [0]*self.nbElem
             if len(bmaps[ib]):
                 for ic in bmaps[ib]:
                     dv  = (vec((bp-self.elements_pos[ic]))).mag()
                     assert(dv<1)
-                    wbc = self.kfunc(dv,self.bandwidth)
+                    wbc = self.kfunc(dv,self.bandwidth,self.d[ib])
                     wlist[ic] = wbc
                 self.wmap[ib] = wlist
                 self.wmap[ib] /= self.wmap[ib].sum()
             else:
                 d,iel = self.elements_tree.query(bp,k=1)
                 self.wmap[ib,iel] = 1.0
-
     
-    def kfunc(self,d,b):
+    def kfunc(self,d,b,a):
         x = d/b
+        s = 0.005
         if x<1:
+            c = np.min(a)
+            if c<s:
+                return (1-x**2)**(-4/s*c+7.)
             return (1-x**2)**4
         else:
             return 0
@@ -90,7 +105,6 @@ class pfc_coupler(object):
 
     def updateBallsDrag(self):
         bvf   = np.einsum('ij,jk->ik',self.wmap,self.elements_vel)
-        bvisc = np.einsum('ij,j...->i...'  ,self.wmap,self.elements_visc)
         bporo = np.einsum('ij,j...->i...'  ,self.wmap,self.elements_porosity)
         rel = bvf-ba.vel()
         self.balls_drag = np.full(rel.shape,0.0).T
@@ -98,7 +112,7 @@ class pfc_coupler(object):
         brad = ba.radius()
         brad2 = ba.radius()**2
         if rel.sum() != 0.0 :
-            Reynolds = 2.0*rho_f*brad*np.linalg.norm(rel,axis=1)/ bvisc.T
+            Reynolds = 2.0*rho_f*brad*np.linalg.norm(rel,axis=1)/ self.fluid_viscosity
             Cd = (0.63+4.8/np.sqrt(Reynolds))**2
             Chi = 3.7-0.65*np.exp(-(1.5-np.log10(Reynolds))**2/2.0)
             self.balls_drag = 0.5*rho_f*np.pi*brad2*Cd*rel.T*np.linalg.norm(rel,axis=1)*np.power(bporo,-1.0*Chi)
@@ -149,11 +163,14 @@ class pfc_coupler(object):
         if (self.max_dt < self.dt):
             self.dt = self.max_dt
 
-    def solve(self,total_time):
+    def initialize(self):
         self.time = 0.0
         self.balls_drag = np.full(ba.vel().shape,0.0)
         self.updateForce()
-        while self.time < total_time:
+
+    def solve(self,solve_time):
+        time = self.time
+        while self.time < time + solve_time:
             self.updateTimeStep()
             
             it.command("solve time {}".format(self.dt))
