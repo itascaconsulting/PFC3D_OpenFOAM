@@ -40,6 +40,9 @@ class pfc_coupler(object):
         self.cell_size = np.linalg.norm(self.cell_sizes)
         self.smallest_size = 1.0
         self.bandwidth = 2*self.cell_size
+        self.p1 = 5.55
+        self.p2 = 6.65
+        self.p3 = 7.6
         
         it.command("""
         new
@@ -80,31 +83,38 @@ class pfc_coupler(object):
     def kfunc(self,d,b,a):
         x = d/b
         s = self.smallest_size
-        pow1 = self.pow1
-        pow2 = self.pow2
-        pow3 = self.pow3
+        p1 = self.p1
+        p2 = self.p2
+        p3 = self.p3
         if x<1:
             if   a[0]>=s and a[1]>=s and a[2]>=s:
                 return (1-x**2)**4
             elif a[0]<s  and a[1]>=s and a[2]>=s:
-                return (1-x**2)**(-4./s*a[0]+pow1)
+                return (1-x**2)**((4-p1)/s*a[0]+p1)
             elif a[0]>=s and a[1]<s  and a[2]>=s:
-                return (1-x**2)**(-4./s*a[1]+pow1)
+                return (1-x**2)**((4-p1)/s*a[1]+p1)
             elif a[0]>=s and a[1]>=s and a[2]<s:
-                return (1-x**2)**(-4./s*a[2]+pow1)
+                return (1-x**2)**((4-p1)/s*a[2]+p1)
             elif a[0]<s  and a[1]<s  and a[2]>=s:
-                p = -4./s*a[0]+pow2
-                return (1-x**2)**(-p/s*a[1]+pow2)
+                f1 = (s-a[0])/s*p2 + a[0]/s*p1
+                f2 = (s-a[0])/s*p1 + a[0]/s*4.
+                return (1-x**2)**((s-a[1])/s*f1 + a[1]/s*f2)
             elif a[0]<s  and a[1]>=s and a[2]<s:
-                p = -4./s*a[2]+pow2
-                return (1-x**2)**(-p/s*a[0]+pow2)
+                f1 = (s-a[0])/s*p2 + a[0]/s*p1
+                f2 = (s-a[0])/s*p1 + a[0]/s*4.
+                return (1-x**2)**((s-a[2])/s*f1 + a[2]/s*f2)
             elif a[0]>=s and a[1]<s  and a[2]<s:
-                p = -4./s*a[1]+pow2
-                return (1-x**2)**(-p/s*a[2]+pow2)
+                f1 = (s-a[1])/s*p2 + a[1]/s*p1
+                f2 = (s-a[1])/s*p1 + a[1]/s*4.
+                return (1-x**2)**((s-a[2])/s*f1 + a[2]/s*f2)
             else:
-                p = -4./s*a[0]+pow3
-                q = -p /s*a[1]+pow3
-                return (1-x**2)**(-q/s*a[2]+pow3)
+                c00 = p3*(1-a[0]/s) + p2*a[0]/s
+                c01 = p2*(1-a[0]/s) + p1*a[0]/s
+                c10 = p2*(1-a[0]/s) + p1*a[0]/s
+                c11 = p1*(1-a[0]/s) + 4.*a[0]/s
+                c0  = c00*(1-a[1]/s) + c10*a[1]/s
+                c1  = c01*(1-a[1]/s) + c11*a[1]/s
+                return (1-x**2)**(c0*(1-a[2]/s) + c1*a[2]/s)
         else:
             return 0
     
