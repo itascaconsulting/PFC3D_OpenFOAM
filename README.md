@@ -64,6 +64,7 @@ Install the `itasca` Python module with `pip install itasca`
 
 ## Building *OpenFOAM* v3.0+
 
+This pakage only works with OpenFOAM v3.0+ which is a specific version of OpenFOAM and does not mean any version 3 or greater. 
 What follows here is a distillation of the instructions from here:
 
 https://openfoamwiki.net/index.php/Installation/Linux/OpenFOAM%2B-3.0%2B/Ubuntu
