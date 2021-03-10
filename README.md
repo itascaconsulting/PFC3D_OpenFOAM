@@ -1,5 +1,7 @@
 # Using *PFC3D* with *OpenFOAM* for fluid-particle interaction modeling.
 
+See: https://github.com/drozdovgrigoriy/PFC3D_OpenFOAM
+
 The repository contains information about solving fluid-particle
 interaction problems by coupling *OpenFOAM* based CFD solvers with
 *PFC3D*. *OpenFOAM* is an open source C++ framework for numerical analysis
