@@ -1,3 +1,3 @@
-__version__ = "2016.06.09"
+__version__ = "2022.01.09"
 
-from _pyDemFoam import pyDemIcoFoam, pyDemSimpleFoam
+from _pyDemFoam import pyDemIcoFoam

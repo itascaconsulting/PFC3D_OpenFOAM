@@ -18,19 +18,21 @@ assert os.path.isfile(os.getenv("FOAM_APPBIN")+"/icoFoam"), "Cannot find OpenFOA
 
 def get_version_number(module):
     f = open(os.path.join(module, "__init__.py"))
-    return string.strip(f.readline().split("=")[1])[1:-1]
+    v = (f.readline().split("=")[1]).strip()[1:-1]
+    print(v)
+    return v
 
 try:
-    print "building version", get_version_number("pyDemFoam")
+    print("building version", get_version_number("pyDemFoam"))
 except:
-    print "could not find version number in __init__.py"
+    print("could not find version number in __init__.py")
     raise
 
 
 ext = [Extension("_pyDemFoam",
               sources=["_pyDemFoam.pyx",
                        "demIcoFoam.C",
-                       "demSimpleFoam.C",
+                       #"demSimpleFoam.C",
                        "demBaseFoam.C"],
               include_dirs = [
                   os.getenv("FOAM_SRC")+"/finiteVolume/lnInclude",
@@ -65,10 +67,10 @@ setup(
     keywords = 'OpenFOAM,CFD,icoFoam,simpleFoam,PFC3D,PFC,DEM'.split(","),
     license          = "BSD",
     classifiers = [
-        'Programming Language :: Python :: 2',
+        'Programming Language :: Python :: 3',
         "Development Status :: 5 - Production/Stable",
         "License :: OSI Approved :: BSD License",
         'Topic :: Scientific/Engineering :: Interface Engine/Protocol Translator',
         "Intended Audience :: Science/Research"
     ],
-    ext_modules = cythonize(ext, language="c++"))
+    ext_modules = cythonize(ext, language_level=3))
