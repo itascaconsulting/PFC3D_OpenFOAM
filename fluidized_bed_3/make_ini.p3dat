@@ -1,0 +1,55 @@
+set deterministic on
+set random 1
+
+domain extent -0.01 1.1e-2 -0.01 1.1e-2 -0.01 0.06
+cmat default model linear property kn 1e6 dp_nratio 0.2 fric 0.1
+
+def inline
+  global dim = 9.5174e-3
+  global radius = dim / 3 / 5 / 2
+  global xdim = dim - radius
+  global ydim = 2 * dim - radius
+end
+@inline
+set grav 0 0 -9.81
+
+ball generate cubic box @radius @xdim @radius @xdim  ...
+    [radius + 7 * 0.05 / 26] [xdim + radius + 7 * 0.05 / 26] ...
+    rad @radius
+
+wall generate box 0 @dim 0 @dim [7 * 0.05 / 26] 0.06
+
+ball attr density 2465
+
+ball attr radius [0.95 * radius]
+
+def ball_height
+  local min = 7 * 0.05 / 26
+  local max = 0
+  loop foreach local b ball.list
+    if ball.pos.z(b) > max then
+      max = ball.pos.z(b)
+    endif
+  endloop
+  ball_height = max - min
+end
+
+def fluid_time
+  global fluid_time = mech.age
+end
+
+history add id 1 fish @fluid_time
+history add id 2 fish @ball_height
+
+plot clear
+plot add ball
+plot add axes
+plot add wall transparency 70
+plot add hist 2 vs 1
+plot add udvector
+plot add geometry contour
+;cy 20000
+
+;ball ini damp 0.7
+;cy 20000
+;save ini.sav
