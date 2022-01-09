@@ -63,12 +63,14 @@ and
 sudo apt-get install python-pip emacs24 git gitk build-essential cmake flex bison zlib1g-dev qt4-dev-tools libqt4-dev libqtwebkit-dev gnuplot libreadline-dev libncurses5-dev libxt-dev libopenmpi-dev openmpi-bin libboost-system-dev libboost-thread-dev libgmp-dev libmpfr-dev python python-dev libcgal-dev python-numpy ipython python-scipy cython
 ```
 
+python-is-python3
+
 Install the `itasca` Python module with `pip install itasca`
 
 
 ## Building *OpenFOAM* v3.0+
 
-This pakage only works with OpenFOAM v3.0+ which is a specific version of OpenFOAM and does not mean any version 3 or greater. 
+This pakage only works with OpenFOAM v3.0+ which is a specific version of OpenFOAM and does not mean any version 3 or greater.
 What follows here is a distillation of the instructions from here:
 
 https://openfoamwiki.net/index.php/Installation/Linux/OpenFOAM%2B-3.0%2B/Ubuntu
@@ -87,7 +89,8 @@ wget "http://downloads.sourceforge.net/openfoamplus/files/ThirdParty-v3.0%2B.tgz
 tar -xzf OpenFOAM-v3.0+.tgz
 tar -xzf ThirdParty-v3.0+.tgz
 echo "source ~/OpenFOAM/OpenFOAM-v3.0+/etc/bashrc WM_NCOMPPROCS=4 WM_MPLIB=SYSTEMOPENMPI" >> ~/.bashrc
-source ~/.bashrc
+source etc/bashrc WM_LABEL_SIZE=64 FOAMY_HEX_MESH=yes
+
 ```
 
 
