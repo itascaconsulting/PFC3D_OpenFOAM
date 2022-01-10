@@ -62,7 +62,7 @@ setup(
     long_description = long_description,
     author = 'Jason Furtney',
     requires = ['numpy'],
-    author_email = 'jkfurtney@gmail.com',
+    author_email = 'jfurtney@itascacg.com',
     url = "https://github.com/jkfurtney/PFC3D_OpenFOAM",
     keywords = 'OpenFOAM,CFD,icoFoam,simpleFoam,PFC3D,PFC,DEM'.split(","),
     license          = "BSD",

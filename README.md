@@ -41,7 +41,7 @@ sudo apt-get update && sudo apt-get upgrade
 
 Update to the latest Linux version of *PFC3D* 7.00: https://www.itascacg.com/software/downloads/itasca-linux-software-7-0-update
 
-bash```
+```bash
 wget https://itasca-software.s3.amazonaws.com/itasca-software/v700/itascasoftware_700.145.deb
 sudo DEBIAN_FRONTEND=noninteractive apt-get -y install -f ./itascasoftware_700.145.deb
 mkdir -p ~/.config/Itasca
