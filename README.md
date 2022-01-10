@@ -1,18 +1,17 @@
-# Using *PFC3D* with *OpenFOAM* for fluid-particle interaction modeling.
+# Using *PFC3D* v700 with *OpenFOAM* v2112 for fluid-particle interaction modeling
 
-See: https://github.com/drozdovgrigoriy/PFC3D_OpenFOAM
 
 The repository contains information about solving fluid-particle
 interaction problems by coupling *OpenFOAM* based CFD solvers with
-*PFC3D*. *OpenFOAM* is an open source C++ framework for numerical analysis
-of continuum mechanics problems. Particle Flow Code in Three
+*PFC3D*. *OpenFOAM* is an open source C++ framework for numerical
+analysis of continuum mechanics problems. Particle Flow Code in Three
 Dimensions (*PFC3D*) is a discrete element code produced by Itasca
 Consulting Group.
 
-OPENFOAMÂ® is a registered trade mark of OpenCFD Limited, producer and
+OPENFOAM® is a registered trade mark of OpenCFD Limited, producer and
 distributor of the OpenFOAM software. This offering is not approved or
 endorsed by OpenCFD Limited, producer and distributor of the OpenFOAM
-software and owner of the OPENFOAMÂ® and OpenCFDÂ® trade marks.
+software and owner of the OPENFOAM® and OpenCFD® trade marks.
 
 Itasca Consulting Group does not provide support for *OpenFOAM*.
 
@@ -24,10 +23,7 @@ the flow and these terms are linked to drag forces on the *PFC3D* particles.
 A Python module `pyDemFoam` is included which contains modified
 versions of the *OpenFOAM* `icoFoam` and `simpleFoam` solvers. These
 solvers are modified to account for the presence of solid particles.
-Currently, *OpenFOAM* only runs on Linux systems and *PFC3D* only runs
-on Windows systems. As a work around *OpenFOAM* is run inside of a
-*VirtualBox* Ubuntu guest or Windows Subsystem for Linux (WSL). Python and TCP sockets are used to link
-`demIcoFoam` to *PFC3D*.
+This package works for only the Ubuntu 20.04 LTS Linux distribution.
 
 The following diagram gives an overview of the system.
 
@@ -36,89 +32,79 @@ The following diagram gives an overview of the system.
 
 # Installation
 
-Update to the latest *PFC3D* version: http://www.itascacg.com
+These instructions work for the x86_64 version of Ubuntu 20.04 LTS.
 
-## Setting up *Ubuntu*
-
-Install VirtualBox 5.0.20 or newer http://download.virtualbox.org/virtualbox/5.0.20/VirtualBox-5.0.20-106931-Win.exe
-
-Install Ubuntu 16.04 into VirtualBox http://www.ubuntu.com/download/desktop
-
-Install the VirtualBox Linux Guest Additions: In the Virtual Box
-window select Devices > Insert the Guest Additions CD Image. Follow
-the on screen instructions.
-
-OR install Ubuntu 16.04 WSL https://docs.microsoft.com/en-us/windows/wsl/install-win10
-
-Make sure you Ubuntu environment is current with:
-
-`sudo apt-get update`
-
-and
-
-`sudo apt-get upgrade`
-
-
+Make sure your Ubuntu system is updated:
 ```bash
-sudo apt-get install python-pip emacs24 git gitk build-essential cmake flex bison zlib1g-dev qt4-dev-tools libqt4-dev libqtwebkit-dev gnuplot libreadline-dev libncurses5-dev libxt-dev libopenmpi-dev openmpi-bin libboost-system-dev libboost-thread-dev libgmp-dev libmpfr-dev python python-dev libcgal-dev python-numpy ipython python-scipy cython
+sudo apt-get update && sudo apt-get upgrade
 ```
 
-python-is-python3
+Update to the latest Linux version of *PFC3D* 7.00: https://www.itascacg.com/software/downloads/itasca-linux-software-7-0-update
+
+bash```
+wget https://itasca-software.s3.amazonaws.com/itasca-software/v700/itascasoftware_700.145.deb
+sudo DEBIAN_FRONTEND=noninteractive apt-get -y install -f ./itascasoftware_700.145.deb
+mkdir -p ~/.config/Itasca
+touch ~/.config/Itasca/wad700.conf
+echo "[weblicense]" >> ~/.config/Itasca/wad700.conf
+echo "email=your email here" >> ~/.config/Itasca/wad700.conf
+echo "password=your web license password here" >> ~/.config/Itasca/wad700.conf
+```
+
+Run the command line version of PFC3D v700
+```bash
+pfc3d700_console
+```
+
+Give the command `license list web` to make sure your web license is
+working. Type `exit` to leave *PFC3D*. At this point, *PFC3D* should
+be installed and working and we move into building OpenFOAM and the
+coupling module.
+
+Install some prerequisite packages:
+```bash
+sudo apt-get install python-is-python3 python3-numpy ipython3 cython3 python3-dev python3-pip git-core build-essential cmake libfl-dev bison zlib1g-dev qttools5-dev qtbase5-dev libqt5x11extras5-dev gnuplot libreadline-dev libncurses-dev libxt-dev libopenmpi-dev openmpi-bin libboost-system-dev libboost-thread-dev libgmp-dev libmpfr-dev libcgal-dev curl libglu1-mesa-dev
+```
 
 Install the `itasca` Python module with `pip install itasca`
 
+## Building *OpenFOAM* v2112
 
-## Building *OpenFOAM* v3.0+
+This package and these instructions only work with OpenFOAM v2112.
 
-This pakage only works with OpenFOAM v3.0+ which is a specific version of OpenFOAM and does not mean any version 3 or greater.
 What follows here is a distillation of the instructions from here:
 
-https://openfoamwiki.net/index.php/Installation/Linux/OpenFOAM%2B-3.0%2B/Ubuntu
+https://openfoamwiki.net/index.php/Installation/Linux/OpenFOAM-7/Ubuntu/20.04
 
 consult this link if you have problems.
 
-First, download and unzip OpenFOAM v3.0+ and the third party
-dependencies with the following commands.
+First, download and unzip OpenFOAM v2112 with the following commands:
 
 ```bash
 cd ~
 mkdir OpenFOAM
 cd OpenFOAM
-wget "http://downloads.sourceforge.net/openfoamplus/files/OpenFOAM-v3.0%2B.tgz?use_mirror=mesh" -O OpenFOAM-v3.0+.tgz
-wget "http://downloads.sourceforge.net/openfoamplus/files/ThirdParty-v3.0%2B.tgz?use_mirror=mesh" -O ThirdParty-v3.0+.tgz
-tar -xzf OpenFOAM-v3.0+.tgz
-tar -xzf ThirdParty-v3.0+.tgz
-echo "source ~/OpenFOAM/OpenFOAM-v3.0+/etc/bashrc WM_NCOMPPROCS=4 WM_MPLIB=SYSTEMOPENMPI" >> ~/.bashrc
-source etc/bashrc WM_LABEL_SIZE=64 FOAMY_HEX_MESH=yes
+wget https://dl.openfoam.com/source/v2112/OpenFOAM-v2112.tgz
+tar -xzf OpenFOAM-v2112.tgz
+ln -s /usr/bin/mpicc.openmpi OpenFOAM-v2112/bin/mpicc
+ln -s /usr/bin/mpirun.openmpi OpenFOAM-v2112/bin/mpirun
+```
 
+These commands add the OpenFOAM shell environment settings needed to
+build and use OpenFOAM. If you have a problem later make sure you did
+this step correctly.
+
+```bash
+echo "source ~/OpenFOAM/OpenFOAM-v2112/etc/bashrc WM_LABEL_SIZE=64 FOAMY_HEX_MESH=yes" >> ~/.bashrc
+. ~/.bashrc
 ```
 
 
-### Building *ParaView*
-
-*ParaView* is a post-processing program which can be used to visualize
-*OpenFOAM* results. It it typically used via the `paraFoam` wrapper.
-
 ```bash
-cd $WM_THIRD_PARTY_DIR
-export QT_SELECT=qt4
-./Allwmake > log.make 2>&1
-wmSET $FOAM_SETTINGS
-
-./makeParaView4 -python -mpi -python-lib /usr/lib/x86_64-linux-gnu/libpython2.7.so.1.0 > log.makepv4_2
-
-```
-
-If you have problems with paraFoam try: `export LIBGL_ALWAYS_SOFTWARE=1`
-
-```bash
-wmSET $FOAM_SETTINGS
 cd $WM_PROJECT_DIR
-export QT_SELECT=qt4
+export QT_SELECT=qt5
 
-find src applications -name "*.L" -type f | xargs sed -i -e 's=\(YY\_FLEX\_SUBMINOR\_VERSION\)=YY_FLEX_MINOR_VERSION < 6 \&\& \1='
-
-./Allwmake > log.make 2>&1
+./Allwmake -j 12 > log.make 2>&1
 ```
 
 At this point *OpenFOAM* should be built. Try `icoFoam -help` to
