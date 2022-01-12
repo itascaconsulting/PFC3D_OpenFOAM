@@ -1,72 +1,7 @@
-/*---------------------------------------------------------------------------*\
-  =========                 |
-  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
-   \\    /   O peration     |
-    \\  /    A nd           | www.openfoam.com
-     \\/     M anipulation  |
--------------------------------------------------------------------------------
-    Copyright (C) 2011-2016 OpenFOAM Foundation
-    Copyright (C) 2019 OpenCFD Ltd.
--------------------------------------------------------------------------------
-License
-    This file is part of OpenFOAM.
-
-    OpenFOAM is free software: you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
-    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
-    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-    FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-    for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
-
-Application
-    icoFoam
-
-Group
-    grpIncompressibleSolvers
-
-Description
-    Transient solver for incompressible, laminar flow of Newtonian fluids.
-
-    \heading Solver details
-    The solver uses the PISO algorithm to solve the continuity equation:
-
-        \f[
-            \div \vec{U} = 0
-        \f]
-
-    and momentum equation:
-
-        \f[
-            \ddt{\vec{U}}
-          + \div \left( \vec{U} \vec{U} \right)
-          - \div \left(\nu \grad \vec{U} \right)
-          = - \grad p
-        \f]
-
-    Where:
-    \vartable
-        \vec{U} | Velocity
-        p       | Pressure
-    \endvartable
-
-    \heading Required fields
-    \plaintable
-        U       | Velocity [m/s]
-        p       | Kinematic pressure, p/rho [m2/s2]
-    \endplaintable
-
-\*---------------------------------------------------------------------------*/
 
 #include "fvCFD.H"
 #include "pisoControl.H"
 
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 int main(int argc, char *argv[])
 {
@@ -120,8 +55,9 @@ int main(int argc, char *argv[])
 
 
 //#include "initContinuityErrs.H"
-    uniformDimensionedScalarField cumulativeContErrIO (IOobject ("cumulativeContErr", runTime.timeName(), "uniform", mesh, IOobject::READ_IF_PRESENT, IOobject::AUTO_WRITE), dimensionedScalar(dimless, Zero));
-    scalar& cumulativeContErr = cumulativeContErrIO.value();
+    //uniformDimensionedScalarField cumulativeContErrIO (IOobject ("cumulativeContErr", runTime.timeName(), "uniform", mesh, IOobject::READ_IF_PRESENT, IOobject::AUTO_WRITE), dimensionedScalar(dimless, Zero));
+    // I think this is just supposed to init to zero in the absence of other run data
+    scalar& cumulativeContErr = 0;cumulativeContErrIO.value();
 
 
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

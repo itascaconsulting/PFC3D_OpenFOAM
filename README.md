@@ -1,3 +1,5 @@
+Warning: This branch is a work in progress
+
 # Using *PFC3D* v700 with *OpenFOAM* v2112 for fluid-particle interaction modeling
 
 
@@ -24,11 +26,6 @@ A Python module `pyDemFoam` is included which contains modified
 versions of the *OpenFOAM* `icoFoam` and `simpleFoam` solvers. These
 solvers are modified to account for the presence of solid particles.
 This package works for only the Ubuntu 20.04 LTS Linux distribution.
-
-The following diagram gives an overview of the system.
-
-![alt text](diagram.png "system schematic")
-
 
 # Installation
 
@@ -124,17 +121,22 @@ cd src
 git clone https://github.com/jkfurtney/PFC3D_OpenFOAM.git
 
 cd PFC3D_OpenFOAM/pyDemFoam/
+python setup.py build
+```
+You will see hundreds of compiler warnings after this step, as long as
+there are no error messages everything should work fine. Install the
+pyDemFoam Python module:
+```bash
 python setup.py install --user
 ```
-
 Test that this worked:
 
 ```bash
 cd ~
-python -c "import pyDemFoam; print pyDemFoam.__version__"
+python -c "import pyDemFoam; print(pyDemFoam.__version__)"
 ```
 
-A version number number like: `2016.06.09` should be shown if the
+A version number number like: `2022.01.09` should be shown if the
 installation worked correctly.
 
 # Running coupled problems

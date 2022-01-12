@@ -16,7 +16,7 @@ pfc_link.send_data(solver.mu())
 while True:
     deltat = pfc_link.read_data()
     if deltat == 0.0:
-        print "solve finished"
+        print("solve finished")
         break
     solver.n(pfc_link.read_data())
     solver.f(pfc_link.read_data())
