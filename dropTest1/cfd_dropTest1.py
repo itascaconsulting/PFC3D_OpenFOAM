@@ -6,7 +6,7 @@ solver = pyDemIcoFoam()
 
 pfc_link = p2pLinkClient()
 #pfc_link.connect("10.0.2.2") # for VirtualBox
-pfc_link.connect("")        # for WSL
+pfc_link.connect("127.0.0.1")        # for WSL
 
 pfc_link.send_data(solver.nodes())
 pfc_link.send_data(solver.elements())
