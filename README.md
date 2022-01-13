@@ -141,26 +141,19 @@ installation worked correctly.
 
 # Running coupled problems
 
-Under Windows make a clone of this repository.
-
 A demonstration and verification problem is included in the
 `dropTest1/` folder.
 
-#### In *PFC3D*
+Open two terminals on the same computer. Change directories to the
+`dropTest1/` folder in each terminal. In the first, give the command:
 
-- Start *PFC3D* and open `dropTest1/dropTest1.p3prj`
+`pfc3d700_console call pfc_dropTest1.py`
 
-- Run the file `pfc_dropTest1.py`
+and in the other give the command:
 
-#### In Ubuntu:
+`python cfd_dropTest1.py`
 
-```bash
-cd ~/src/PFC3D_OpenFOAM/dropTest1/
-blockMesh
-python cfd_dropTest1.py
-```
-
-This should launch the coupled calculation.
+The coupled problems should run.
 
 ![alt text](dropTest1/dropTest1.png "Model Results")
 
@@ -182,26 +175,4 @@ following ways:
 # More Information
 
 Documentation for *OpenFOAM* can be found here:
-http://cfd.direct/openfoam/documentation/
-
-## Building a local copy of the *OpenFOAM* documentation
-
-If you are exploring the *OpenFOAM* C++ code it is helpful to have a
-local copy of the OpenFOAM C++ API documentation. GNU Global can help
-navigating large source codes.
-
-```bash
-sudo apt-get install doxygen graphviz global
-cd $WM_PROJECT_DIR/doc
-./Allwmake
-```
-
-The Doxygen reference should be in `$WM_PROJECT_DIR/doc/Doxygen/html/index.html`
-
-python setup.py install --user > log.txt 2>&1 && tail log.txt
-
-## Other projects
-
-* OpenFOAM LAMMPS coupling: https://github.com/xiaoh/sediFoam
-
-* OpenFOAM YADE coupling: http://trace.tennessee.edu/utk_graddiss/21/
+https://www.openfoam.com/documentation/overview
