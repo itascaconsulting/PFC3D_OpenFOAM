@@ -42,7 +42,7 @@ demIcoFoam::~demIcoFoam() {
 }
 
 void demIcoFoam::run(double time_increment) {
-  volVectorField        &U = *U_;
+  volVectorField        &U = *U_; // aliases for convenience
   volVectorField        &f = *f_;
   volScalarField        &n = *n_;
   volScalarField        &p = *p_;
@@ -68,11 +68,19 @@ void demIcoFoam::run(double time_increment) {
     while (piso_->correct())
     {
       volScalarField rAU(1.0/UEqn.A());
+      // volVectorField HbyA("HbyA", U);
+      // HbyA = rAU*UEqn.H();
+      // surfaceScalarField phiHbyA
+      //   ("phiHbyA", (fvc::interpolate(HbyA) & mesh_->Sf()));
 
-      volVectorField HbyA("HbyA", U);
-      HbyA = rAU*UEqn.H();
-      surfaceScalarField phiHbyA
-        ("phiHbyA", (fvc::interpolate(HbyA) & mesh_->Sf()));
+      volVectorField HbyA(constrainHbyA(rAU*UEqn.H(), U, p));
+      surfaceScalarField phiHbyA ("phiHbyA", fvc::flux(HbyA) + fvc::interpolate(rAU)*fvc::ddtCorr(U, phi));
+
+      adjustPhi(phiHbyA, U, p);
+
+      // Update the pressure BCs to ensure flux consistency
+      constrainPressure(p, U, phiHbyA, rAU);
+
 
       adjustPhi(phiHbyA, U, p);
 

@@ -42,10 +42,10 @@ model gravity 0 0 -9.81
 def fluid_time
   global fluid_time = mech.time.total
 end
-history fish fluid_time
-;ball history id 2 zvelocity id 1
-;ball history id 3 zunbalforce id 1
-;ball cfd history id 4 zforce id 1
+history fish id 1 fluid_time
+ball history id 2 velocity-z id 1
+ball history id 3 force-unbalanced-z id 1
+;ball cfd history id 4 zforce id 1 ;; does not seem to work??
 ;plot clear
 ;plot add hist 2 vs 1
 ;plot add cfdelement shape arrow colorby vectorattribute "velocity"
@@ -54,7 +54,7 @@ history fish fluid_time
 element_volume = ca.volume()
 dt = 0.005
 
-for i in range(100):
+for i in range(75):
     it.command("solve age {}".format(it.mech_age()+dt))
     cfd_link.send_data(dt) # solve interval
     cfd_link.send_data(ca.porosity())
@@ -68,4 +68,5 @@ cfd_link.close()
 del cfd_link
 
 print("ball z velocity", it.ball.find(1).vel_z())
-it.command("history write 1,2,3,4 file 'droptest1.txt' truncate")
+it.command("history export 1,2,3 file 'droptest1.txt' truncate")
+it.command("model save 'final.sav'")
