@@ -1,5 +1,5 @@
 # distutils: language = c++
-# distutils: sources = demIcoFoam.C  demBaseFoam.C
+# distutils: sources = demIcoFoam.C  demBaseFoam.C demIcoFoamSemiImplicitDrag.C
 
 import numpy as np
 
@@ -175,8 +175,49 @@ cdef class pyDemIcoFoam(pyDemBaseFoam):
                 for j in range(3):
                     self.dthisptr.set_f(i,j,value[i][j])
 
-# ###########################
+###########################
 
+
+cdef extern from "demIcoFoamSemiImplicitDrag.H":
+   cdef cppclass demIcoFoamSemiImplicitDrag(demBaseFoam):
+       demIcoFoamSemiImplicitDrag() except +
+       double ubar(int i, int j)
+       void set_ubar(int i, int j, double v)
+       double beta(int i)
+       void set_beta(int i, double v)
+
+
+cdef class PyDemIcoFoamSemiImplicitDrag(pyDemBaseFoam):
+    cdef demIcoFoamSemiImplicitDrag *dthisptr
+    def __cinit__(self):
+        self.dthisptr = self.thisptr = new demIcoFoamSemiImplicitDrag()
+    def __dealloc__(self):
+        del self.thisptr
+
+    def ubar(self, value=None):
+        if value is None:
+            return np.array([[self.dthisptr.ubar(i,0),
+                              self.dthisptr.ubar(i,1),
+                              self.dthisptr.ubar(i,2)]
+                             for i in range(self.nCells())])
+        else:
+            value = np.asarray(value, dtype=np.double)
+            assert value.shape == (self.nCells(), 3)
+            for i in range(self.nCells()):
+                for j in range(3):
+                    self.dthisptr.set_ubar(i,j,value[i][j])
+
+    def beta(self, value=None):
+        if value is None:
+            return np.array([self.dthisptr.beta(i)
+                             for i in range(self.nCells())])
+        else:
+            value = np.asarray(value, dtype=np.double)
+            assert value.shape == (self.nCells(),)
+            for i in range(self.nCells()):
+                self.dthisptr.set_beta(i,value[i])
+
+# this was a steady state solver??
 # cdef extern from "demSimpleFoam.H":
 #    cdef cppclass demSimpleFoam(demBaseFoam):
 #        demSimpleFoam() except +

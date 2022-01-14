@@ -69,7 +69,6 @@ void demSimpleFoam::run(double) {
                                 beta*ubar/n -
                                 fvm::Sp(beta/n, U)
         );
-
       UEqn().relax();
 
       solve(UEqn() == -fvc::grad(p));

@@ -17,22 +17,24 @@ with p2pLinkServer() as cfd_link:
     dmin, dmax = nmin -0.1*diag, nmax+0.1*diag
     print dmin, dmax
     it.command("""
-    new
+    model new
+    MODEL LARGE-STRAIN in
     domain extent {} {} {} {} {} {}
     """.format(dmin[0], dmax[0],
                dmin[1], dmax[1],
                dmin[2], dmax[2]))
+    elements = elements.astype(np.longlong) # need to fix the c++ side, this is a work around for a platform type size issue.
     ca.create_mesh(nodes, elements)
-    it.command("""
-    config cfd
-    element cfd ini density {}
-    element cfd ini visc {}
+    it.command(f"""
+    model config cfd
+    element cfd ini density {fluid_density}
+    element cfd ini visc {fluid_viscosity}
+    call "particles.p3dat"
     cfd porosity poly
     cfd buoy on
     cfd relax 1
     cfd update
-    call particles.p3dat
-    """.format(fluid_density, fluid_viscosity))
+    """
 
 
     element_volume = ca.volume()
@@ -41,20 +43,20 @@ with p2pLinkServer() as cfd_link:
     r_factor = 1.0
     for i in range(20):
         it.command("solve age {}".format(it.mech_age()+dt))
-        print "sending solve time"
+        print("sending solve time")
         cfd_link.send_data(dt) # solve interval
         cfd_link.send_data(ca.porosity())
         new_force = (ca.drag().T/element_volume).T/fluid_density
         cfd_link.send_data(new_force)
-        print " cfd solve started"
+        print(" cfd solve started")
         ca.set_pressure(cfd_link.read_data())
         ca.set_pressure_gradient(cfd_link.read_data())
         newu = cfd_link.read_data()
         ca.set_velocity(oldu*(1-r_factor)+newu*r_factor)
         oldu = newu
-        print " cfd solve ended"
+        print(" cfd solve ended")
 
     cfd_link.send_data(0.0)
 
-    print "ball z velocity", it.ball.find(1).vel_z()
+    print("ball z velocity", it.ball.find(1).vel_z())
 #it.command('plot bitmap filename "porous1.png"')

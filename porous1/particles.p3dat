@@ -1,31 +1,28 @@
-set fish autocreate off
-cmat default model linear property kn 1e1 dp_nratio 0.2
+fish automatic-create off
+contact cmat default model linear property kn 1e1 dp_nratio 0.2
 
-def inline
-  local dim = 2.5e-2
-  local radius = dim / 5 / 4
-  global xdim = dim - radius
-  global ydim = 2 * dim - radius
+fish define inline
+    local dim = 2.5e-2
+    local radius = dim / 5 / 4
+    global xdim = dim - radius
+    global ydim = 2 * dim - radius
 end
 @inline
 
-ball generate cubic box [-1*xdim] @xdim [-1*ydim] @ydim  [-1*xdim] @xdim rad [5e-2/5/2/4]
+ball generate cubic box [-1*xdim] @xdim [-1*ydim] @ydim [-1*xdim] @xdim radius [5e-2/5/2/4]
 
-ball attr dens 2600
+ball attribute density 2600
+ball fix spin-x spin-y spin-z
 ball fix x
 ball fix y
 ball fix z
-def ftime
-  global ftime = mech.age
+
+[global cfd_vel = 0]
+fish define vel
+    vel = cfd_vel
 end
-
-def fhist
-  global fhist = element.cfd.vel.y(element.cfd.find(225))
+fish define time
+    time = mech.time.total
 end
-
-history id  1 fish @fhist
-history id  2 fish @ftime
-
-plot clear
-plot add hist 1 vs 2
-plot add cfdelement shape arrow colorby vectorattribute "velocity" coloropt scaled ramp minimum 0.011 maximum 0.015 interval 0.0005
+fish history name '1' @time
+fish history name '2' @vel
