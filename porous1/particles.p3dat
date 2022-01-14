@@ -12,11 +12,8 @@ end
 ball generate cubic box [-1*xdim] @xdim [-1*ydim] @ydim [-1*xdim] @xdim radius [5e-2/5/2/4]
 
 ball attribute density 2600
-ball fix spin-x spin-y spin-z
-ball fix x
-ball fix y
-ball fix z
-
+ball fix spin
+ball fix velocity
 [global cfd_vel = 0]
 fish define vel
     vel = cfd_vel

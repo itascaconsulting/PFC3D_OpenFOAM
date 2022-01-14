@@ -187,7 +187,7 @@ cdef extern from "demIcoFoamSemiImplicitDrag.H":
        void set_beta(int i, double v)
 
 
-cdef class PyDemIcoFoamSemiImplicitDrag(pyDemBaseFoam):
+cdef class pyDemIcoFoamSemiImplicitDrag(pyDemBaseFoam):
     cdef demIcoFoamSemiImplicitDrag *dthisptr
     def __cinit__(self):
         self.dthisptr = self.thisptr = new demIcoFoamSemiImplicitDrag()

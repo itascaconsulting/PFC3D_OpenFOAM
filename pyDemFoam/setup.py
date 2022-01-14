@@ -32,7 +32,7 @@ except:
 ext = [Extension("_pyDemFoam",
               sources=["_pyDemFoam.pyx",
                        "demIcoFoam.C",
-                       #"demSimpleFoam.C",
+                       "demIcoFoamSemiImplicitDrag.C",
                        "demBaseFoam.C"],
               include_dirs = [
                   os.getenv("FOAM_SRC")+"/finiteVolume/lnInclude",

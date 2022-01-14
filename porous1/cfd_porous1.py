@@ -21,7 +21,7 @@ with p2pLinkClient() as pfc_link:
         print("waiting for run time")
         deltat = pfc_link.read_data()
         if deltat == 0.0:
-            print "solve finished"
+            print ("solve finished")
             break
         print("got run time", deltat)
         newn = pfc_link.read_data()

@@ -1,4 +1,5 @@
 import itasca as it
+it.command("python-reset-state false")
 from itasca import cfdarray as ca
 from itasca.util import p2pLinkServer
 
@@ -11,14 +12,14 @@ with p2pLinkServer() as cfd_link:
     elements = cfd_link.read_data()
     fluid_density = cfd_link.read_data()
     fluid_viscosity = cfd_link.read_data()
-    print fluid_density, fluid_viscosity
+    print (fluid_density, fluid_viscosity)
     nmin, nmax = np.amin(nodes,axis=0), np.amax(nodes,axis=0)
     diag = np.linalg.norm(nmin-nmax)
     dmin, dmax = nmin -0.1*diag, nmax+0.1*diag
-    print dmin, dmax
+    print (dmin, dmax)
     it.command("""
     model new
-    MODEL LARGE-STRAIN in
+    MODEL LARGE-STRAIN on
     domain extent {} {} {} {} {} {}
     """.format(dmin[0], dmax[0],
                dmin[1], dmax[1],
@@ -34,7 +35,7 @@ with p2pLinkServer() as cfd_link:
     cfd buoy on
     cfd relax 1
     cfd update
-    """
+    """)
 
 
     element_volume = ca.volume()
