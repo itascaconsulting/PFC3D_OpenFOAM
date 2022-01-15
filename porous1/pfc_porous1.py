@@ -42,6 +42,7 @@ with p2pLinkServer() as cfd_link:
     dt = 0.005
     oldu = ca.velocity()
     r_factor = 1.0
+    vel_his = []
     for i in range(20):
         it.command("solve age {}".format(it.mech_age()+dt))
         print("sending solve time")
@@ -53,11 +54,14 @@ with p2pLinkServer() as cfd_link:
         ca.set_pressure(cfd_link.read_data())
         ca.set_pressure_gradient(cfd_link.read_data())
         newu = cfd_link.read_data()
+        print("current velocity", newu[0][1])
+        vel_his.append(newu[0][1])
         ca.set_velocity(oldu*(1-r_factor)+newu*r_factor)
         oldu = newu
         print(" cfd solve ended")
 
     cfd_link.send_data(0.0)
 
-    print("ball z velocity", it.ball.find(1).vel_z())
+it.command("model save 'final.sav'")
+
 #it.command('plot bitmap filename "porous1.png"')
