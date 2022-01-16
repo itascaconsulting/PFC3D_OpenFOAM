@@ -66,8 +66,8 @@ void demIcoFoamSemiImplicitDrag::run(double time_increment) {
       (fvm::ddt(U)
        + fvm::div(phi, U)
        - fvm::laplacian(nu, U)
-       + beta*ubar/n
-       + fvm::Sp(-beta/n, U));
+       - beta*ubar/n
+       + fvm::Sp(beta/n, U));
 
     if (piso_->momentumPredictor())
       solve(UEqn == -fvc::grad(p));
