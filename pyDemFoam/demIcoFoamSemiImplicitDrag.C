@@ -75,10 +75,6 @@ void demIcoFoamSemiImplicitDrag::run(double time_increment) {
     while (piso_->correct())
     {
       volScalarField rAU(1.0/UEqn.A());
-      // volVectorField HbyA("HbyA", U);
-      // HbyA = rAU*UEqn.H();
-      // surfaceScalarField phiHbyA
-      //   ("phiHbyA", (fvc::interpolate(HbyA) & mesh_->Sf()));
 
       volVectorField HbyA(constrainHbyA(rAU*UEqn.H(), U, p));
       surfaceScalarField phiHbyA ("phiHbyA", fvc::flux(HbyA) + fvc::interpolate(rAU)*fvc::ddtCorr(U, phi));

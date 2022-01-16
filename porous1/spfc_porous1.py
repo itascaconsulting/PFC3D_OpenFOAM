@@ -43,7 +43,7 @@ with p2pLinkServer() as cfd_link:
     dt = 0.005
     oldu = ca.velocity()
     r_factor = 1.0
-    for i in range(10):
+    for i in range(20):
         print(i)
         it.command("solve age {}".format(it.mech_age()+dt))
         print ("sending solve time")
@@ -76,3 +76,4 @@ with p2pLinkServer() as cfd_link:
         print (" cfd solve ended")
 
     cfd_link.send_data(0.0)
+it.command("model save 'sfinal.sav'")
