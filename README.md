@@ -1,5 +1,3 @@
-Warning: This branch is a work in progress
-
 # Using *PFC3D* v700 with *OpenFOAM* v2112 for fluid-particle interaction modeling
 
 
@@ -17,15 +15,16 @@ software and owner of the OPENFOAM® and OpenCFD® trade marks.
 
 Itasca Consulting Group does not provide support for *OpenFOAM*.
 
-The two-way coarse-grid coupling between *PFC3D* and *OpenFOAM* follows
-the approach of Tsuji. Porosity and body force fields are included in
-the Navier-Stokes equation to account for the presence of particles in
-the flow and these terms are linked to drag forces on the *PFC3D* particles.
+The two-way coarse-grid coupling between *PFC3D* and *OpenFOAM*
+follows the approach of Tsuji. Porosity and body force fields are
+included in the Navier-Stokes equations to account for the presence of
+particles in the flow and these terms are linked to drag forces on the
+*PFC3D* particles.
 
 A Python module `pyDemFoam` is included which contains modified
-versions of the *OpenFOAM* `icoFoam` and `simpleFoam` solvers. These
-solvers are modified to account for the presence of solid particles.
-This package works for only the Ubuntu 20.04 LTS Linux distribution.
+versions of the *OpenFOAM* `icoFoam` solver. These solvers are
+modified to account for the presence of solid particles. This package
+works for only the Ubuntu 20.04 LTS Linux distribution.
 
 # Installation
 
@@ -40,7 +39,7 @@ Update to the latest Linux version of *PFC3D* 7.00: https://www.itascacg.com/sof
 
 ```bash
 wget https://itasca-software.s3.amazonaws.com/itasca-software/v700/itascasoftware_700.145.deb
-sudo DEBIAN_FRONTEND=noninteractive apt-get -y install -f ./itascasoftware_700.145.deb
+sudo DEBIAN_FRONTEND=noninteractive apt-get -y install -f ./itascasoftware_700.146.deb
 mkdir -p ~/.config/Itasca
 touch ~/.config/Itasca/wad700.conf
 echo "[weblicense]" >> ~/.config/Itasca/wad700.conf
@@ -111,8 +110,13 @@ confirm.
 
 `pyDemFoam` is a Python module which contains modified versions of
 *OpenFOAM* solvers. It includes porosity and body force terms to
-account for the presence of the particles. Modified version of both
-`icoFoam` and `simpleFoam` are provided.
+account for the presence of the particles. Two versions `icoFoam` are
+provided. `pyDemIcoFoam` uses the explicit formulation for drag
+described in the PFC3D manual in the cfd module section and
+`pyDemIcoFoamSemiImplicitDrag` uses the semi implicit drag treatment
+described in this paper: Xiao, H., Sun, J., 2010. Algorithms in a
+Robust Hybrid CFD-DEM Solver for Particle-Laden Flows. Commun. Comp.
+Phys.
 
 ```bash
 cd
@@ -157,6 +161,8 @@ The coupled problems should run.
 
 ![alt text](dropTest1/dropTest1.png "Model Results")
 
+Only the dropTest1/ and porous1/ examples are working.
+
 # Limitations
 
 This work is intended as a demonstration of how to connect *PFC3D* to
@@ -170,7 +176,6 @@ following ways:
 
 - Time derivatives of porosity are not included in the momentum or continuity equations.
 
-- Further verification of the coupled system is underway.
 
 # More Information
 
