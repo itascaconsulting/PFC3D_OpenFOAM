@@ -181,3 +181,24 @@ following ways:
 
 Documentation for *OpenFOAM* can be found here:
 https://www.openfoam.com/documentation/overview
+
+# Building `pyDemFoam` for Python3.6
+PFC3D v700 has an internal Python 3.6 interpreter, the pyDemFoam
+module can be compiled against Python 3.6 so it can be loaded directly
+into PFC3D 700.
+
+
+```bash
+sudo add-apt-repository ppa:deadsnakes/ppa
+sudo apt update
+sudo apt install python3.6
+sudo apt install python3.6-dev
+
+cd pyDemFoam
+python3.6 setup.py build
+python3.6 setup.py install --user
+# manually install these
+sudo cp ~/.local/lib/python3.6/site-packages/_pyDemFoam.cpython-36m-x86_64-linux-gnu.so /opt/itascasoftware/v700/python36/lib/python3.6/site-packages/
+sudo cp -r ~/.local/lib/python3.6/site-packages/pyDemFoam/ /opt/itascasoftware/v700/python36/lib/python3.6/site-packages/
+
+```
