@@ -1,3 +1,4 @@
+assert False, "this is a work in progress"
 import itasca as it
 it.command("python-reset-state false")
 from itasca import cfdarray as ca
@@ -14,9 +15,8 @@ nmin, nmax = np.amin(nodes,axis=0), np.amax(nodes,axis=0)
 diag = np.linalg.norm(nmin-nmax)
 dmin, dmax = nmin -0.1*diag, nmax+0.1*diag
 print(dmin, dmax)
-
 it.command("""
-model new
+;model new
 MODEL LARGE-STRAIN on
 domain extent {} {} {} {} {} {}
 """.format(dmin[0], dmax[0],
@@ -50,10 +50,9 @@ ball history id 3 force-unbalanced-z id 1
 
 element_volume = ca.volume()
 dt = 0.005
-
+1/0
 for i in range(75):
     it.command("solve age {}".format(it.mech_age()+dt))
-    cfd_link.send_data(dt) # solve interval
     solver.n(ca.porosity())
     solver.f((ca.drag().T/element_volume).T/fluid_density)
     solver.set_dt(dt)

@@ -151,6 +151,10 @@ A demonstration and verification problem is included in the
 Open two terminals on the same computer. Change directories to the
 `dropTest1/` folder in each terminal. In the first, give the command:
 
+`blockMesh`
+
+to build the OpenFOAM mesh, then give the command:
+
 `pfc3d700_console call pfc_dropTest1.py`
 
 and in the other give the command:
@@ -187,18 +191,18 @@ PFC3D v700 has an internal Python 3.6 interpreter, the pyDemFoam
 module can be compiled against Python 3.6 so it can be loaded directly
 into PFC3D 700.
 
+(This is a work in progress)
 
 ```bash
 sudo add-apt-repository ppa:deadsnakes/ppa
 sudo apt update
-sudo apt install python3.6
+sudo apt install python3.6-full
 sudo apt install python3.6-dev
+python3.6 -m ensurepip
+python3.6 -m pip install numpy==1.13.0
 
 cd pyDemFoam
 python3.6 setup.py build
 python3.6 setup.py install --user
-# manually install these
-sudo cp ~/.local/lib/python3.6/site-packages/_pyDemFoam.cpython-36m-x86_64-linux-gnu.so /opt/itascasoftware/v700/python36/lib/python3.6/site-packages/
-sudo cp -r ~/.local/lib/python3.6/site-packages/pyDemFoam/ /opt/itascasoftware/v700/python36/lib/python3.6/site-packages/
 
 ```
